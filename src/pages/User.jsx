@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  addUserAPI,
   deleteUser,
   getAllUsers,
   getUserById,
@@ -7,14 +8,10 @@ import {
   updateUser,
 } from "../services/user.service";
 import { useNavigate } from "react-router";
-import { Eye, EyeOff, UserRoundPen, Trash, ShieldUser } from "lucide-react";
-
-import CreateProjectManager from "../components/CreateProjectManager";
-import UpdateProjectManager from "../components/UpdateProjectManager";
-import AssignProject from "../components/AssignProject";
+import { Eye, EyeOff, UserRoundPen, Trash, User } from "lucide-react";
 import { useApi } from "../context/contextApi";
-import User from "../components/user.jsx";
-function Users( {navBar}) {
+
+function Users({ navBar }) {
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const [users, setUsers] = useState([]);
@@ -26,7 +23,14 @@ function Users( {navBar}) {
     userName: "",
     email: "",
     accountType: "teamMember",
-    Password: "",
+    password: "",
+    phoneNumber: "",
+  });
+   const [user1, setUser1] = useState({
+    id: null,
+    userName: "",
+    email: "",
+    accountType: "null",
   });
   function handlechange(event) {
     const { name, type, value, checked } = event.target;
@@ -35,10 +39,26 @@ function Users( {navBar}) {
       [name]: type === "checkbox" ? checked : value,
     }));
   }
+ 
+  const handleOneuser = async(user)=>{
+    
+   try {
+     const _id = user._id ;
+     const res = await getUserById(_id);
+       setUser1(res.data.user);
+     console.log(res)
+     setOneUser(true);
+   } catch (error) {
+    console.log(error)
+   }
+  }
+
+
+
 
   const fetchUsers = async () => {
     try {
-        console.log(navBar)
+      console.log(navBar);
       const data = await getAllUsers();
       setUsers(data.users);
     } catch (error) {
@@ -51,21 +71,31 @@ function Users( {navBar}) {
       if (window.confirm(`Are you sure you want to delete ${user.userName}?`)) {
         const res = await deleteUser(_id);
         console.log(res);
+        fetchUsers();
       }
     } catch (error) {
       console.log(error);
     }
   };
   const onHandleModify = async () => {
-    console.log(formData);
     const _id = userId;
-    console.log(formData);
-    const data = await updateUser(_id, userId);
+    const updatedData = formData;
+    const data = await updateUser(_id, updatedData);
     console.log(data);
+    fetchUsers();
+    setModify(false);
+  };
+  const onHandleAdd = async () => {
+    console.log(formData);
+    const data = await addUserAPI(formData);
+    console.log(data);
+    setIsEditOpen(false);
+    fetchUsers();
   };
 
   useEffect(() => {
     fetchUsers();
+    
   }, []);
   const handleunblockUser = async (user) => {
     console.log(user._id);
@@ -76,7 +106,7 @@ function Users( {navBar}) {
   };
 
   return (
-    <div className="min-h-screen mt-16 bg-[#F7F7F7] p-4 md:p-8 flex flex-col items-center gap-3 ">
+    <div className="min-h-screen  bg-[#F7F7F7] p-4 md:p-8 flex flex-col items-center gap-3 ">
       <div className="w-full h-20  justify-between flex flex-row  items-center border-b border-gray-200  ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           All User list
@@ -96,7 +126,7 @@ function Users( {navBar}) {
             No project managers found.
           </p>
         )} */}
-      <table className="bg-gray-100 px-1">
+      <table className="bg-gray-100 px-3 rounded-2xl">
         <thead>
           <tr className="grid grid-flow-col md:grid-flow-row  grid-rows-1 grid-cols-9   h-16 items-center justify-between ">
             <th>index</th>
@@ -110,44 +140,45 @@ function Users( {navBar}) {
         </thead>
         <tbody className="flex flex-col gap-3  ">
           {users.map((user, index) => (
-            <tr key={user._id}>
-              <div className="grid  grid-flow-col gap-x-7 md:grid-flow-row items-center  grid-rows-1 h-12 p-6  bg-gray-200  grid-cols-10 gap-y-2 justify-start ">
-                <td>{index}</td>
-                <td> {user.userName}</td>
-                <td className="w-full col-span-3 ">{user.email}</td>
-                <td className="w-full col-span-2">9755149009</td>
-                <td>{user.active}</td>
-                <td className="w-16 flex flex-row ">
-                  <ShieldUser
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setOneUser(true);
-                    }}
-                  />
-                  <UserRoundPen
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setModify(true);
-                      setUserId(user._id);
-                    }}
-                  />
-                  <Trash
-                    className="cursor-pointer"
-                    onClick={() => handleDelete(user)}
-                  ></Trash>{" "}
-                </td>
+            <tr
+              className="grid  grid-flow-col gap-x-7 md:grid-flow-row items-center  grid-rows-1 h-12 p-6  bg-gray-200  grid-cols-10 gap-y-2 justify-start"
+              key={user._id}
+            >
+              <td>{index}</td>
+              <td> {user.userName}</td>
+              <td className="w-full col-span-3 ">{user.email}</td>
+              <td className="w-full col-span-2">9755149009</td>
+              <td>{user.active}</td>
+              <td className="w-16 flex flex-row ">
+                <User
+                  className="cursor-pointer"
+                  onClick={() =>
+                 handleOneuser(user)
+                  }
+                />
+                <UserRoundPen
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setModify(true);
+                    setUserId(user._id);
+                  }}
+                />
+                <Trash
+                  className="cursor-pointer"
+                  onClick={() => handleDelete(user)}
+                ></Trash>{" "}
+              </td>
 
-                <td className="">
-                  {user.active === "block" && (
-                    <div onClick={() => handleunblockUser(user)}>
-                      <button className="bg-green-200 cursor-pointer px-4 rounded-lg hover:bg-green-300">
-                        {" "}
-                        unblock user
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </div>
+              <td className="">
+                {user.active === "block" && (
+                  <div onClick={() => handleunblockUser(user)}>
+                    <button className="bg-green-200 cursor-pointer px-4 rounded-lg hover:bg-green-300">
+                      {" "}
+                      unblock user
+                    </button>
+                  </div>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -195,10 +226,164 @@ function Users( {navBar}) {
           
         ))} */}
       {/* </div> */}
-      {oneUser && <User userId={userId} onClose={() => setOneUser(false)} />}
+      {isEditOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsEditOpen(false)}
+          />
+          <div
+            className="fixed z-50 top-1/2 left-1/2 
+        -translate-x-1/2 -translate-y-1/2
+        bg-white p-6 rounded shadow w-96"
+          >
+            <h2 className="text-xl font-bold mb-4">add the user </h2>
+
+            <label className="flex flex-col w-full  " htmlFor="userName">
+              <h1>Username</h1>
+              <input
+                placeholder="update the UserName"
+                name="userName"
+                type="text"
+                value={formData.userName}
+                onChange={handlechange}
+                className="border p-2 w-full mb-4"
+              />
+            </label>
+            <label className="flex flex-col w-full" htmlFor="email">
+              <h1>email</h1>
+              <input
+                placeholder="update the discription"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handlechange}
+                className="border p-2 w-full mb-4 "
+              />
+              <label className="flex flex-col w-full  " htmlFor="phoneNumber">
+                <h1>phoneNumber</h1>
+                <input
+                  placeholder="phonenumber"
+                  name="phoneNumber"
+                  type="text"
+                  value={formData.phoneNumber}
+                  onChange={handlechange}
+                  className="border p-2 w-full mb-4"
+                />
+              </label>
+            </label>
+            <label className="flex flex-col w-full" htmlFor="accountType">
+              <h1>accountType</h1>
+              <select
+                placeholder="update the accountType"
+                type="accountType"
+                name="accountType"
+                value={formData.accountType}
+                onChange={handlechange}
+                className="border p-2 w-full mb-4 "
+              >
+                <option value="teamMember">TeamMember</option>
+                <option value="admin">admin</option>
+                <option value="teamManager">TeamManager</option>
+              </select>
+            </label>
+
+            {showPassword ? (
+              <label className="flex  flex-col w-full" htmlFor="text">
+                <h1>Password</h1>
+                <div className="w-full flex border h-12 mb-4  flex-row items-center text-center ">
+                  <input
+                    placeholder=" password"
+                    type="text"
+                    name="password"
+                    value={formData.password}
+                    onChange={handlechange}
+                    className=" p-2  w-full mb-4 outline-none "
+                  />
+                  <div
+                    className="text-center  place-items-center   "
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <EyeOff />
+                  </div>
+                </div>
+              </label>
+            ) : (
+              <label className="flex  flex-col w-full" htmlFor="text">
+                <h1>Password</h1>
+                <div className="w-full flex border h-12 mb-4  flex-row items-center text-center ">
+                  <input
+                    placeholder=" password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handlechange}
+                    className=" p-2  w-full mb-4 outline-none "
+                  />
+                  <div
+                    className="text-center  place-items-center   "
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <Eye />
+                  </div>
+                </div>
+              </label>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setModify(false)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={onHandleAdd}
+                className="px-4 py-2 bg-green-500 text-white rounded"
+              >
+                add the user
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+      {oneUser && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setOneUser(false)}
+          />
+        
+           <div
+            className="fixed z-50 top-1/2 left-1/2 
+        -translate-x-1/2 -translate-y-1/2
+        bg-white p-6 rounded shadow w-96"
+          >
+              <div className="flex w-full place-content-center  items-center">
+                <h1 className="text-center text-2xl capitalize text-gray-900 font-semibold">
+                  user Data
+                </h1>
+              </div>
+              <div className="flex flex-col gap-1 bg-gray-200 rounded-lg p-2 ">
+                <h1>name</h1>
+                <h1>{user1.userName}</h1>
+              </div>
+              <div className="flex flex-col gap-1 bg-gray-200 rounded-lg p-2 ">
+                <h1>email</h1>
+                <h1>{user1.email}</h1>
+              </div>
+              <div className="flex flex-col gap-1 bg-gray-200 rounded-lg p-2 ">
+                <h1>accountType</h1>
+                <h1>{user1.accountType}</h1>
+              </div>
+            </div>
+          
+        </>
+      )}
       {modify && (
         <>
-          {" "}
           <div
             className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setModify(false)}
@@ -224,7 +409,7 @@ function Users( {navBar}) {
             <label className="flex flex-col w-full" htmlFor="email">
               <h1>email</h1>
               <input
-                placeholder="update the discription"
+                placeholder="update the email"
                 type="email"
                 name="email"
                 value={formData.email}
@@ -242,7 +427,7 @@ function Users( {navBar}) {
                 onChange={handlechange}
                 className="border p-2 w-full mb-4 "
               >
-                <option value="TeamMember">TeamMember</option>
+                <option value="teamMember">TeamMember</option>
                 <option value="admin">admin</option>
                 <option value="teamManager">TeamManager</option>
               </select>

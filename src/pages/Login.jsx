@@ -31,7 +31,7 @@ function Login() {
     try {
       const res = await loginAPI(formdata);
       console.log(res.data.success);
-      ifres.data.success){
+      if(res.data.success){
       localStorage.setItem("token", res.data.token);
       setUser(res.data?.user);
      setIsLogin(true)

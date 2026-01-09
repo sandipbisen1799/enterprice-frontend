@@ -50,7 +50,7 @@ function AdminLayout() {
 
           <Bell color="#ffffff" />
           <div className="w-12 h-10 bg-white rounded-sm">
-            <img src="" alt="" />
+            {/* <img src="" alt="" /> */}
           </div>
           <div className="flex flex-col text-white capitalize ">
             <h1>name</h1>
@@ -130,7 +130,7 @@ function AdminLayout() {
             </div>
           </div>
         </div>
-        <div className=" w-full md:w-4/5 md:ml-[20%]   ">
+        <div className=" w-full md:w-4/5 md:ml-[20%] md:mt-16   ">
           <Outlet />
         </div>
       </div>

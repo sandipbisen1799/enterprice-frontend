@@ -50,6 +50,11 @@ export const deleteUser = async (_id) => {
   const res = await api.delete(`auth/${_id}`);
   return res.data;
 };
+export const addUserAPI = async (formData) => {
+  const res = await api.post(`auth/add`,formData);
+  
+  return res.data;
+};
 export const createProjectManagerAPI = (data) => {
   return api.post("/auth/admin/createProjectmanager", data);
 }

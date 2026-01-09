@@ -20,7 +20,7 @@ function ApiProvider({ children }) {
   const checkAuth = async () => {
     try {
       const res = await authAPI();
-      console.log(res?.data?.user)
+    
       setUser(res?.data?.user);
   console.log(user)
   if(user){
