@@ -27,8 +27,8 @@ export const reverifyuserAPI = async(email)=>{
 export const authAPI = (data) => {
   return api.get("/auth/me", data);
 }
-export const getAllUsers = async () => {
-  const res = await api.get("/auth/users");
+export const getAllUsers = async (page = 1, limit = 10) => {
+  const res = await api.get(`/auth/users?page=${page}&limit=${limit}`);
   return res.data;
 };
 export const getAllUser = async () => {
@@ -100,7 +100,7 @@ export const updateProjectAPI = async(projectId, formData)=>{
   const res = await api.put(`projects/${projectId}/update`,formData)
   return res ;
 }
-export const blockUser = async (userId)=>{
+export const blockUsers = async (userId)=>{
   const res = await api.put (`/auth/blockuser/${userId}`);
   return res ;
 }
@@ -108,3 +108,10 @@ export const handleunblockUserAPI = async (userId)=>{
   const res = await api.put( `/auth/unblockuser/${userId}`)
   return res ;
 }
+export const getBlockUser = async (page = 1, limit = 5) => {
+  const res = await api.get(
+    `/auth/blockusers?page=${page}&limit=${limit}`,
+    { withCredentials: true }
+  );
+  return res.data;
+};

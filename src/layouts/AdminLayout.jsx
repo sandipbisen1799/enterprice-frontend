@@ -34,20 +34,20 @@ function AdminLayout() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-100">
+    <div className="relative min-h-screen bg-gray-100  " >
 
   
       <header className="fixed top-0 left-0 w-full h-16 bg-[#514390] z-40 flex items-center px-4 md:px-12">
-        <div className="flex items-center gap-4 w-1/2">
-          <h1 className="text-white text-2xl font-semibold">Winden</h1>
+        <div className="flex items-center gap-2 md:gap-4 w-1/2">
+          <h1 className="text-white text-xl md:text-2xl font-semibold">Winden</h1>
           <input
             type="text"
-         placeholder="&#xF002; Search"
-            className="font-[FontAwesome] hidden bg-white md:block w-full py-2 px-3 rounded outline-none"
+          placeholder="&#xF002; Search"
+            className="font-[FontAwesome] hidden md:block bg-white w-full py-2 px-3 rounded outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-300"
           />
         </div>
 
-        <div className="flex items-center justify-end w-1/2 gap-4 text-white">
+        <div className="flex items-center justify-end w-1/2 gap-2 md:gap-4 text-white">
           <Bell />
           <div onClick={() => navigate("/admin/profile")} className="w-10 h-10 cursor-pointer overflow-hidden rounded">
             <img src={profileimage} className="inset-0 w-full h-full" alt="fg" />
@@ -64,7 +64,7 @@ function AdminLayout() {
             />
 
             {navBar && (
-              <div className="absolute right-0  overflow-hidden top-10 bg-white shadow-md rounded w-36 z-50">
+              <div className="absolute right-0   overflow-hidden top-10 bg-white shadow-md rounded w-36 z-999">
               
                 <div
                   className=" text-black px-4 z-100 py-2 hover:bg-gray-100 cursor-pointer"
@@ -94,8 +94,8 @@ function AdminLayout() {
     
         <aside
           className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-2/3 md:w-1/5
-          bg-[#6E5CC2] z-30 transition
-          ${menuOpen ? "block" : "hidden"} md:block`}
+          bg-[#6E5CC2] z-30 transition-transform duration-300 ease-in-out
+          ${menuOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
         >
           <nav className="flex flex-col mt-5 ">
             <div className={  itemClass("/admin")} onClick={() => navigate("/admin")}>
@@ -120,7 +120,7 @@ function AdminLayout() {
       
         <main
           className="ml-0 md:ml-[20%] w-full md:w-4/5
-          h-[calc(100vh-4rem)] overflow-y-auto p-4"
+          h-[calc(100vh-4rem)] overflow-y-auto p-2 md:p-4 bg-gray-50"
         >
           <Outlet />
         </main>

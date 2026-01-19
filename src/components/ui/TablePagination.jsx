@@ -55,7 +55,8 @@ function TablePagination({
       </div>
 
       {/* PAGINATION */}
-      <div className="flex items-center justify-between mt-4 px-2">
+      {totalPages > 1 && (<>
+         <div className="flex items-center justify-between mt-4 px-2">
         <p className="text-sm text-gray-500">
           Page {page} of {totalPages}
         </p>
@@ -102,6 +103,9 @@ function TablePagination({
           </button>
         </div>
       </div>
+      </>)}
+
+   
     </div>
   );
 }

@@ -12,10 +12,14 @@ import { Eye, EyeOff, UserRoundPen, Trash, User, EllipsisVertical } from "lucide
 // import { useApi } from "../context/contextApi";
 import Table from "../../components/ui/Table";
 import { toast } from 'react-toastify';
+import TablePagination from "../../components/ui/TablePagination";
+import UserMenu from "../../components/UserMenu";
 function Users({ navBar }) {
   // const navigate = useNavigate();
-  const [menu ,setMenu]= useState(false)
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [menu ,setMenu]= useState(false);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [userId, setUserId] = useState(null);
   const [users, setUsers] = useState([]);
@@ -60,8 +64,11 @@ function Users({ navBar }) {
   const fetchUsers = async () => {
     try {
       console.log(navBar);
-      const data = await getAllUsers();
-      setUsers(data.users);
+      const data = await getAllUsers(page,10);
+      setUsers(data.users || []);
+      setTotalPages(data?.pagination?.totalPages);
+      console.log(data);
+      
     } catch (error) {
       console.log(error.response?.data || error.message);
     }
@@ -110,7 +117,7 @@ function Users({ navBar }) {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page]);
   const handleunblockUser = async (user) => {
     try {
       console.log(user._id);
@@ -167,7 +174,7 @@ const handleModifyButton = async(user)=>{
   }
 }
   return (
-    <div  className="min-h-screen px-5  bg-[#F7F7F7]  flex flex-col items-center gap-3 relative ">
+    <div  onClick={()=>setMenu(false)} className="min-h-screen px-5  bg-[#F7F7F7]  flex flex-col items-center gap-3 relative  ">
       <div className="w-full h-20  justify-between flex flex-row  items-center  ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           All User list
@@ -354,77 +361,48 @@ const handleModifyButton = async(user)=>{
       {/* </div> */}
       
   {users.length==0 ?(<h2>there are no users</h2>):( 
-    <Table
+    <TablePagination
   columns={columns}
   data={users}
+  page={page}
+  totalPages ={totalPages}
+  total={users.length}
+onPageChange={ setPage}
 renderActions={(user) => (
-  <div className="flex gap-2 text-[#705CC7] relative " >
+  <div className="flex gap-2 text-center items-center place-content-center text-[#705CC7]  " >
     <EllipsisVertical
       className="cursor-pointer"
-      className="cursor-pointer"
+
   onClick={(e) => {
     e.stopPropagation();
+
     const rect = e.currentTarget.getBoundingClientRect();
 
     setMenu(user._id);
-    setMenuPosition({
+    setMenuPos({
       x: rect.right,
       y: rect.bottom,
     });
   }}
     />
 
-    {menu === user._id && (
-      <>
-      <div
-            className=" fixed inset-0  z-40"
-            onClick={() => setMenu(false)}
-          />
-      <div className="absolute right-0 top-10  bg-white shadow-md rounded w-36 z-50">
-        <div
-          className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-          onClick={() => {
-            handleModifyButton(user);
-            setMenu(null);
-          }}
-        >
-          Edit
-        </div>
-
-        <div
-          className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-          onClick={() => {
-            handleOneuser(user);
-            setMenu(null);
-          }}
-        >
-          User Details
-        </div>
-
-        <div
-          className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-          onClick={() => {
-            handleDelete(user);
-            setMenu(null);
-          }}
-        >
-          Remove
-        </div>
-      </div>
-      </>
-    )}
+   
   </div>
 )}
 
   
   renderExtra={(user) => (
+
     user.active=='block' && (
+    <div className="flex place-content-center items-center">
       <button
         onClick={() => handleunblockUser(user)}
-        className="bg-green-200 px-2 py-1 rounded-lg hover:bg-green-300"
+        className="bg-green-200 px-2 place-content-center text-center   py-1 rounded-lg hover:bg-green-300"
       >
         unblock user
+  
       </button>
+      </div>
     )
   )}
 /> 
@@ -538,7 +516,7 @@ renderActions={(user) => (
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setModify(false)}
+                onClick={() => setIsEditOpen(false)}
                 className="px-4 py-2 border rounded"
               >
                 Cancel
@@ -587,6 +565,16 @@ renderActions={(user) => (
           </div>
         </>
       )}
+      <UserMenu
+        menu={menu}
+        setMenu={setMenu}
+        menuPos={menuPos}
+        users={users}
+        handleModifyButton={handleModifyButton}
+        handleOneuser={handleOneuser}
+        handleDelete={handleDelete}
+      />
+
       {modify && (
         <>
           <div
@@ -623,21 +611,21 @@ renderActions={(user) => (
                 className="border p-2 w-full mb-4 "
               />
             </label>
-            <label className="flex flex-col w-full" htmlFor="accountType">
-              <h1>accountType</h1>
-              <select
-                placeholder="update the accountType"
-                type="accountType"
-                name="accountType"
-                value={formData.accountType}
-                onChange={handlechange}
-                className="border p-2 w-full mb-4 "
-              >
-                <option value="teamMember">TeamMember</option>
-                <option value="admin">admin</option>
-                <option value="projectManager">ProjectManager</option>
-              </select>
-            </label>
+              <label className="flex flex-col w-full" htmlFor="accountType">
+                <h1>accountType</h1>
+                <select
+                  placeholder="update the accountType"
+                  type="accountType"
+                  name="accountType"
+                  value={formData.accountType}
+                  onChange={handlechange}
+                  className="border p-2 w-full mb-4 "
+                >
+                  <option value="teamMember">TeamMember</option>
+                  <option value="admin">admin</option>
+                  <option value="projectManager">ProjectManager</option>
+                </select>
+              </label>
 
             {showPassword ? (
               <label className="flex  flex-col w-full" htmlFor="text">

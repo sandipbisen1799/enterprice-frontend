@@ -38,16 +38,16 @@ function TeamMemberLayout() {
 
   
       <header className="fixed top-0 left-0 w-full h-16 bg-[#514390] z-40 flex items-center px-4 md:px-12">
-        <div className="flex items-center gap-4 w-1/2">
-          <h1 className="text-white text-2xl font-semibold">Winden</h1>
+        <div className="flex items-center gap-2 md:gap-4 w-1/2">
+          <h1 className="text-white text-xl md:text-2xl font-semibold">Winden</h1>
           <input
             type="text"
             placeholder="Search..."
-            className="hidden bg-white md:block w-full py-2 px-3 rounded outline-none"
+            className="hidden bg-white md:block w-full py-2 px-3 rounded outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-300"
           />
         </div>
 
-        <div className="flex items-center justify-end w-1/2 gap-4 text-white">
+        <div className="flex items-center justify-end w-1/2 gap-2 md:gap-4 text-white">
           <Bell />
           <div className="w-10 h-10 bg-white rounded" />
           <div className="hidden md:flex flex-col text-sm capitalize">
@@ -97,8 +97,8 @@ function TeamMemberLayout() {
     
         <aside
           className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-2/3 md:w-1/5
-          bg-[#6E5CC2] z-30 transition
-          ${menuOpen ? "block" : "hidden"} md:block`}
+          bg-[#6E5CC2] z-30 transition-transform duration-300 ease-in-out
+          ${menuOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
         >
           <nav className="flex flex-col mt-5 gap-1">
             <div className={itemClass("/teammember")} onClick={() => navigate("/teammember")}>
@@ -112,7 +112,7 @@ function TeamMemberLayout() {
       
         <main
           className="ml-0 md:ml-[20%] w-full md:w-4/5
-          h-[calc(100vh-4rem)] overflow-y-auto p-4"
+          h-[calc(100vh-4rem)] overflow-y-auto p-2 md:p-4 bg-gray-50"
         >
           <Outlet />
         </main>

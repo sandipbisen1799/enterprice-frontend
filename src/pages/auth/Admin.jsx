@@ -9,6 +9,7 @@ import {Eye, EyeOff, Trash, UserRoundPen, EllipsisVertical} from "lucide-react"
 import TablePagination from '../../components/ui/TablePagination.jsx'
 import { assignProjectAPI, getAllProjectAPI,  } from "../../services/user.service.js";
 import { toast } from 'react-toastify';
+import GenericMenu from '../../components/GenericMenu.jsx';
 function Admin() {
   const [projectManager, setProjectManager] = useState([]);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -18,6 +19,7 @@ function Admin() {
   const [totalPages, setTotalPages] = useState(1);
   const [userId, setUserId] = useState(null);
   const [menu, setMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormdata] = useState({
     name: "",
@@ -171,7 +173,7 @@ function Admin() {
   }, [page]);
 
   return (
-    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 ">
+    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 " onClick={() => setMenu(null)}>
       <div className="w-full h-20 justify-between flex flex-row items-center ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           project manager list
@@ -191,50 +193,32 @@ function Admin() {
   totalPages ={totalPages}
   total={projectManager.length}
   onPageChange={setPage}
-renderActions={(user) => (
- <div className="flex gap-2 place-content-center text-left text-[#705CC7] relative">
-   <EllipsisVertical
-     className="cursor-pointer"
-     onClick={() =>
-       setMenu(menu === user._id ? null : user._id)
-     }
-   />
+renderActions={(user) => {
+  const options = [
+    { label: 'Edit', onClick: () => handleModifyButton(user) },
+    { label: 'Assign Project', onClick: () => handleAssignButton(user) },
+     { label: 'Delete', onClick: () => handleDelete(user), className: 'text-red-500' },
+  ];
 
-   {menu === user._id && (
-     <div className="absolute right-12  top-10 bg-white shadow-md rounded w-36 z-50">
-       <div
-         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-         onClick={() => {
-           handleModifyButton(user);
-           setMenu(null);
-         }}
-       >
-         Edit
-       </div>
+  return (
+    <div className="flex gap-2 place-content-center  relative">
+      <EllipsisVertical
+        className="cursor-pointer text-[#705CC7]"
+        onClick={(e) => {
+          e.stopPropagation();
+          const rect = e.currentTarget.getBoundingClientRect();
+          setMenu(menu === user._id ? null : user._id);
+          setMenuPos({
+            x: rect.right,
+            y: rect.bottom,
+          });
+        }}
+      />
 
-       <div
-         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-         onClick={() => {
-           handleDelete(user);
-           setMenu(null);
-         }}
-       >
-         Delete
-       </div>
-
-       <div
-         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
-         onClick={() => {
-           handleAssignButton(user);
-           setMenu(null);
-         }}
-       >
-         Assign Project
-       </div>
-     </div>
-   )}
- </div>
-)}
+      <GenericMenu menu={menu === user._id ? user._id : null} setMenu={setMenu} menuPos={menuPos} options={options} />
+    </div>
+  );
+}}
  />)}
     
 

@@ -89,7 +89,7 @@ const navigate = useNavigate();
   {
     key: "index",
     label: "Index",
-    render: (_, index) => index +1,
+    render: (_, index) => index,
   },
   {
     key: "name",
@@ -111,15 +111,14 @@ const navigate = useNavigate();
   }, [page]);
 
   return (
-    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 ">
-      <div className="w-full h-20 justify-between flex flex-row items-center ">
-        <h1 className="text-2xl font-bold capitalize text-gray-800">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 bg-[#F7F7F7] flex flex-col items-center gap-4 py-6">
+      <div className="w-full max-w-7xl h-auto sm:h-20 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold capitalize text-gray-800 text-center sm:text-left">
           Projects
         </h1>
         <button
-          className="px-6 py-2 hover:scale-101 capitalize hover:text-white rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] transition-all cursor-pointer"
-          onClick={() => navigate('/admin/addproject')
-          }
+          className="px-4 sm:px-6 py-2 hover:scale-105 capitalize hover:text-white rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] hover:bg-[#7143f070] transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg"
+          onClick={() => navigate('/admin/addproject')}
         >
           create the project
         </button>
@@ -127,17 +126,18 @@ const navigate = useNavigate();
         {/* <div className=" w-full mt-2.5  md:w-3/4  flex flex-col  items-center  bg-[#E5E7EB] rounded-lg   h-full shadow-2xs "> */}
           {/* <div className=" p-1 md:p-4 flex flex-col gap-4 overflow-y-auto"> */}
             {projects.length === 0 && (
-              <h2 className="text-center text-gray-600 text-xl font-semibold">There are no projects</h2>
+              <h2 className="text-center text-gray-600 text-lg sm:text-xl font-semibold">There are no projects</h2>
             )}
-            <TablePagination
-              columns={columns}
-              data={projects}
-              page={page}
-              totalPages ={totalPages}
-              total={projects.length}
-              onPageChange={setPage}
-            renderActions={(user) => (
-  <div className="flex gap-2 text-[#705CC7] relative">
+            <div className="w-full max-w-7xl overflow-hidden">
+              <TablePagination
+                columns={columns}
+                data={projects}
+                page={page}
+                totalPages ={totalPages}
+                total={projects.length}
+                onPageChange={setPage}
+                renderActions={(user) => (
+  <div className="flex gap-2 text-[#705CC7] text-center items-center place-content-center relative">
     <EllipsisVertical
       className="cursor-pointer"
       onClick={() =>
@@ -170,6 +170,7 @@ const navigate = useNavigate();
     )}
   </div>
  )}/>
+           </div>
 
             {/* {projects.map((user) => (
               <div
@@ -215,9 +216,9 @@ const navigate = useNavigate();
                       onClick={() => setModify(false)}
                     />
                     <div
-                      className="fixed z-50 top-1/2 left-1/2 
+                      className="fixed z-50 top-1/2 left-1/2
         -translate-x-1/2 -translate-y-1/2
-        bg-white p-6 rounded shadow w-96"
+        bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md mx-4"
                     >
                       <h2 className="text-xl font-bold mb-4">
                         update the project{" "}
@@ -264,19 +265,19 @@ const navigate = useNavigate();
                         </select>
                       </label>
 
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
                         <button
                           onClick={() => setModify(false)}
-                          className="px-4 py-2 border rounded"
+                          className="px-4 py-2 border rounded hover:bg-gray-100 transition-colors duration-200"
                         >
                           Cancel
                         </button>
 
                         <button
                           onClick={onHandleModify}
-                          className="px-4 py-2 bg-green-500 text-white rounded"
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors duration-200"
                         >
-                          Update the ProjectManager
+                          Update the Project
                         </button>
                       </div>
                     </div>
