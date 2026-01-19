@@ -19,9 +19,10 @@ export const resenduserAPI = async(email)=>{
 
 }
 export const reverifyuserAPI = async(email)=>{
-  return api.post('/auth/verifyotp',email)
+  return api.post('/auth/resendotp',email)
 
 }
+
 
 export const authAPI = (data) => {
   return api.get("/auth/me", data);

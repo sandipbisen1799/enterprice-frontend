@@ -19,3 +19,13 @@ export const deleteTeamMembersAPI = async (teamMemberId,projectManagerId) => {
   const res = await api.delete(`/projectManager/delete/${teamMemberId}/${projectManagerId}`);
   return res ;
 }
+export const getTeamMemeberById = async (_id)=>{
+  const res =  await api.get(`/projectManager/teammember/${_id}`);
+  return res ;
+
+}
+export const updateTeamMember = async (_id,projectManagerId,updatedData)=>{
+  const res =  await api.put(`/projectManager/update/${_id}/${projectManagerId}`,updatedData);
+  return res ;
+  
+}

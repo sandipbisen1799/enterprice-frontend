@@ -4,10 +4,11 @@ import {
   deleteProjectManagerAPI,
   createProjectManagerAPI,
   UpdateProjectManagerAPI,
-} from "../services/user.service";
-import {Eye, EyeOff} from "lucide-react"
-
-import { assignProjectAPI, getAllProjectAPI,  } from "../services/user.service";
+} from "../../services/user.service.js";
+import {Eye, EyeOff, Trash, UserRoundPen, EllipsisVertical} from "lucide-react"
+import TablePagination from '../../components/ui/TablePagination.jsx'
+import { assignProjectAPI, getAllProjectAPI,  } from "../../services/user.service.js";
+import { toast } from 'react-toastify';
 function Admin() {
   const [projectManager, setProjectManager] = useState([]);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -16,7 +17,7 @@ function Admin() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [userId, setUserId] = useState(null);
-
+  const [menu, setMenu] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormdata] = useState({
     name: "",
@@ -42,9 +43,11 @@ function Admin() {
           const data = await getAllProjectAPI();
           console.log(data.data.projects)
           setProjects(data.data.projects || []);
+         
           
         } catch (error) {
           console.log(error.response?.data || error.message);
+          toast.error("Failed to fetch project managers!");
         }
       };
 
@@ -52,11 +55,12 @@ function Admin() {
 
   const fetchProjectManager = async () => {
     try {
-      const data = await getProjectManager(page, 2);
+      const data = await getProjectManager(page, 5);
       setProjectManager(data.users || []);
       setTotalPages(data.pagination.totalPages);
     } catch (error) {
       console.log(error.response?.data || error.message);
+      toast.error("Failed to fetch projects!");
     }
   };
   const handleDelete = async (user) => {
@@ -64,9 +68,14 @@ function Admin() {
       const projectManagerId = user._id;
       if (window.confirm(`Are you sure you want to delete ${user.userName}?`)) {
         const res = await deleteProjectManagerAPI(projectManagerId);
+        if(res?.success){
+          fetchProjectManager();
+          toast.success("Project manager deleted successfully!");
+        }
       }
     } catch (error) {
       console.log(error);
+      toast.error("Failed to delete project manager!");
     }
   };
  
@@ -74,9 +83,15 @@ function Admin() {
     try {
       const res = await createProjectManagerAPI(formData);
       console.log(res);
-      fetchProjectManager();
+      if(res?.data?.success){
+        setIsEditOpen(false)
+        fetchProjectManager();
+        toast.success("Project manager added successfully!");
+      }
+
     } catch (error) {
       console.error(error.response?.data?.message);
+      toast.error("Failed to add project manager!");
     }
   };
      const handleUpdateProjectManager = async () => {
@@ -84,35 +99,80 @@ function Admin() {
    try {  
       const res= await UpdateProjectManagerAPI( userId, formData);  
       console.log(res);
+      if(res?.success){
+        setModify(false)
+        fetchProjectManager();
+        toast.success("Project manager updated successfully!");
+      }
 
-        
+
     } catch (error) {
       console.error(error.response?.data?.message);
+      toast.error("Failed to update project manager!");
     }}
         const handleAssignProject = async () => {
        
        try {  
+        fetchProject();
         const projectId =formData.projectId;
-        console.log(projectId)
+        console.log(projectId);
+        console.log(userId)
           const res= await assignProjectAPI(projectId,userId);  
           
           console.log(res);
       setAssignProject(false);
-            
-        } catch (error) {
-          console.error(error.response?.data?.message);
-        }}
+      toast.success("Project assigned successfully!");
 
+       } catch (error) {
+         console.error(error.response?.data?.message);
+         toast.error("Failed to assign project!");
+       }}
 
+  const handleAssignButton =(user)=>{
+      setUserId(user._id);
+    fetchProject();
+    setAssignProject(true);
+
+  }
+  const handleModifyButton = (user) => {
+    setFormdata({
+      userName: user.userName || "",
+      email: user.email || "",
+      password: "",
+      accountType: "projectManager",
+      projectId: user.projectId || ""
+    });
+    setUserId(user._id);
+    setModify(true);
+  }
+   const columns = [
+  {
+    key: "index",
+    label: "Index",
+    render: (_, index) => index,
+  },
+  {
+    key: "userName",
+    label: "Name",
+  },
+  {
+    key: "email",
+    label: "Email",
+  },
+  {
+    key: "active",
+    label: "Status",
+  },
+];
 
   useEffect(() => {
     fetchProjectManager();
-   fetchProject();
+  
   }, [page]);
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 md:px-8 flex flex-col items-center gap-6 ">
-      <div className="w-full h-20  justify-between px-3 flex flex-row  items-center border-b border-gray-200  ">
+    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 ">
+      <div className="w-full h-20 justify-between flex flex-row items-center ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           project manager list
         </h1>
@@ -123,14 +183,63 @@ function Admin() {
           add project manager
         </button>
       </div>
-      <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-          Admin Dashboard
-        </h1>
-        <p className="text-gray-700 mt-1">Project Manager List</p>
-      </div>
+      {projectManager.length==0 ?(<h2>there are no project manager</h2>):(  
+        <TablePagination
+  columns={columns}
+  data={projectManager}
+  page={page}
+  totalPages ={totalPages}
+  total={projectManager.length}
+  onPageChange={setPage}
+renderActions={(user) => (
+ <div className="flex gap-2 place-content-center text-left text-[#705CC7] relative">
+   <EllipsisVertical
+     className="cursor-pointer"
+     onClick={() =>
+       setMenu(menu === user._id ? null : user._id)
+     }
+   />
 
-      <div className="w-full max-w-3xl bg-gray-200 rounded-2xl shadow-xl p-4 md:p-6 flex flex-col gap-4 overflow-y-auto">
+   {menu === user._id && (
+     <div className="absolute right-12  top-10 bg-white shadow-md rounded w-36 z-50">
+       <div
+         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
+         onClick={() => {
+           handleModifyButton(user);
+           setMenu(null);
+         }}
+       >
+         Edit
+       </div>
+
+       <div
+         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
+         onClick={() => {
+           handleDelete(user);
+           setMenu(null);
+         }}
+       >
+         Delete
+       </div>
+
+       <div
+         className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
+         onClick={() => {
+           handleAssignButton(user);
+           setMenu(null);
+         }}
+       >
+         Assign Project
+       </div>
+     </div>
+   )}
+ </div>
+)}
+ />)}
+    
+
+
+      {/* <div className="w-full max-w-3xl bg-gray-200 rounded-2xl shadow-xl p-4 md:p-6 flex flex-col gap-4 overflow-y-auto">
         {projectManager.length === 0 && (
           <p className="text-center text-gray-600">
             No project managers found.
@@ -169,19 +278,19 @@ function Admin() {
                   className="px-6 py-2 hover:scale-101 rounded-lg text-gray-800 font-semibold text-center bg-[#c0161647] hover:bg-red-400 transition-all cursor-pointer capitalize"
                   onClick={() => handleDelete(user)}
                 >
-                  {" "}
+                  
                   delete
                 </button>
               </div>
             </div>
             <button
               className="px-6 py-2 hover:scale-101  rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] transition-all cursor-pointer capitalize "
-              onClick={() => {
-                setAssignProject(true);
-                setUserId(user._id);
-              }}
+              onClick={() => 
+                handleAssignButton(user)
+              
+              }
             >
-              {" "}
+              
               assign the project to the projectManager
             </button>
           </div>
@@ -218,7 +327,7 @@ function Admin() {
         >
           Next
         </button>
-      </div>
+      </div> */}
       {isEditOpen && (
         // <CreateProjectManager onClose={() => setIsEditOpen(false)} />
         <>
@@ -314,12 +423,8 @@ function Admin() {
       )}
 
       {modify && (
-        // <UpdateProjectManager
-        //   projectManagerId={userId}
-        //   onClose={() => setModify(false)}
-        // />
+       
         <>
-      {/* Overlay */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={()=>setModify(false)}
@@ -415,20 +520,13 @@ function Admin() {
       )}
 
       {assignProject && (
-        // <AssignProject
-          // projectManagerId={userId}
-          // onClose={() => setAssignProject(false)}
-          // handleclose={handleclose}
-          
-        // />
-          <>
-      {/* Overlay */}
+       <>
       <div
         className="fixed inset-0 bg-black/50 z-40"
         onClick={()=>setAssignProject(false)}
       />
 
-      {/* Modal */}
+  
       <div className="fixed z-50 top-1/2 left-1/2 
         -translate-x-1/2 -translate-y-1/2
         bg-white p-6 rounded shadow w-96">
@@ -439,15 +537,17 @@ function Admin() {
         <h1 className="text-gray-800 font-semibold text-lg">Name of the Project </h1>
          
  <select  name="projectId" value={formData.projectId} onChange={handlechange}  className=" textarea w-full  h-full p-1  outline-none  border border-gray-200 bg-[#FFFFFF]  font-normal rounded-sm">
-  {projects.map((project)=>(
-   
+ 
+  
+{projects.length === 0 ? (
+  <option disabled>No projects available</option>
+) : (
+  projects.map((project)=>(
     <option className="w-full h-full flex flex-col"  key={project._id} value={project._id}>
-        
         {`${project.name}    ${project.status}`}          
-
-        </option>
-
-  ))}
+    </option>
+  ))
+)}
        </select>
 
        </label>
@@ -477,3 +577,4 @@ function Admin() {
 }
 
 export default Admin;
+

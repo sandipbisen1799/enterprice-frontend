@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
-
+import { useNavigate } from "react-router";
+import TablePagination from '../../components/ui/TablePagination.jsx'
 import {
   deleteProjectAPI,
   getProjectApi,
   updateProjectAPI,
-} from "../services/user.service";
-import { Eye, EyeOff } from "lucide-react";
-import { createProjectAPI } from "../services/user.service";
+} from "../../services/user.service.js";
+import { Eye, EyeOff, Trash, UserRoundPen, EllipsisVertical } from "lucide-react";
+
+import { toast } from 'react-toastify';
 function Project() {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const [projects, setProjects] = useState([]);
   const [modify, setModify] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [menu, setMenu] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [formData, setFormdata] = useState({
@@ -21,7 +24,7 @@ function Project() {
     description: "",
   });
   // const [showPassword, setShowPassword] = useState(false);
-
+const navigate = useNavigate();
   // Handle input change
   function handlechange(event) {
     const { name, type, value, checked } = event.target;
@@ -32,7 +35,7 @@ function Project() {
   }
   const fetchProjects = async () => {
     try {
-      const data = await getProjectApi(page, 2);
+      const data = await getProjectApi(page, 5);
       console.log(data.projects);
       setProjects(data?.projects);
 
@@ -49,9 +52,12 @@ function Project() {
       if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
         const res = await deleteProjectAPI(projectId);
         console.log(res);
+        fetchProjects();
+        toast.success("Project deleted successfully!");
       }
     } catch (error) {
       console.log(error);
+      toast.error("Failed to delete project!");
     }
   };
   const onHandleModify = async () => {
@@ -59,53 +65,113 @@ function Project() {
       console.log(formData);
       console.log(userId);
       const projectId = userId;
-      const res = updateProjectAPI(projectId, formData);
+      const res = await updateProjectAPI(projectId, formData);
       console.log(res);
+      fetchProjects();
+      setModify(false);
+      toast.success("Project updated successfully!");
     } catch (error) {
       console.log(error);
+      toast.error("Failed to update project!");
     }
   };
-  const handleCreateProject = async () => {
-    try {
-      const res = await createProjectAPI(formData);
-      console.log(res);
-    } catch (error) {
-      console.error(error.response?.data?.message);
-    }
-  };
+
+  const handleModifyButton = (user) => {
+    setFormdata({
+      name: user.name || "",
+      status: user.status || "",
+      description: user.description || "",
+    });
+    setUserId(user._id);
+    setModify(true);
+  }
+     const columns = [
+  {
+    key: "index",
+    label: "Index",
+    render: (_, index) => index +1,
+  },
+  {
+    key: "name",
+    label: "Name",
+  },
+  {
+    key: "description",
+    label: "discription",
+  },
+   {
+    key: "status",
+    label: "status",
+  },
+
+];
 
   useEffect(() => {
     fetchProjects();
   }, [page]);
 
   return (
-    <div className="min-h-screen w-full  h-full items-center flex flex-col bg-[#F3F4F6]  ">
-      <div className="w-full h-20 justify-between px-3 flex flex-row  items-center border-b border-gray-200  ">
+    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 ">
+      <div className="w-full h-20 justify-between flex flex-row items-center ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
-          project section
+          Projects
         </h1>
         <button
-          className="px-6 py-2 hover:scale-101 hover:text-white rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] transition-all cursor-pointer"
-          onClick={() => setIsEditOpen(true)}
+          className="px-6 py-2 hover:scale-101 capitalize hover:text-white rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] transition-all cursor-pointer"
+          onClick={() => navigate('/admin/addproject')
+          }
         >
           create the project
         </button>
       </div>
-
-      <div className="flex flex-col justify-between items-center gap-y-2.5  w-full  bg-[#F3F4F6]  ">
-        <h1 className="text-2xl md:text-3xl text-center  font-bold text-gray-900">
-          {" "}
-          Projects List
-        </h1>
-        <div className=" w-full mt-2.5  md:w-3/4  flex flex-col  items-center  bg-[#E5E7EB] rounded-lg   h-full shadow-2xs ">
-          <div className="w-full max-w-3xl p-1 md:p-4 flex flex-col gap-4 overflow-y-auto">
+        {/* <div className=" w-full mt-2.5  md:w-3/4  flex flex-col  items-center  bg-[#E5E7EB] rounded-lg   h-full shadow-2xs "> */}
+          {/* <div className=" p-1 md:p-4 flex flex-col gap-4 overflow-y-auto"> */}
             {projects.length === 0 && (
-              <p className="text-center text-gray-600">
-                No project managers found.
-              </p>
+              <h2 className="text-center text-gray-600 text-xl font-semibold">There are no projects</h2>
             )}
+            <TablePagination
+              columns={columns}
+              data={projects}
+              page={page}
+              totalPages ={totalPages}
+              total={projects.length}
+              onPageChange={setPage}
+            renderActions={(user) => (
+  <div className="flex gap-2 text-[#705CC7] relative">
+    <EllipsisVertical
+      className="cursor-pointer"
+      onClick={() =>
+        setMenu(menu === user._id ? null : user._id)
+      }
+    />
 
-            {projects.map((user) => (
+    {menu === user._id && (
+      <div className="absolute right-12  top-10 bg-white shadow-md rounded w-36 z-50">
+        <div
+          className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => {
+            handleModifyButton(user);
+            setMenu(null);
+          }}
+        >
+          Edit
+        </div>
+
+        <div
+          className="text-black px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => {
+            handleDelete(user);
+            setMenu(null);
+          }}
+        >
+          Delete
+        </div>
+      </div>
+    )}
+  </div>
+ )}/>
+
+            {/* {projects.map((user) => (
               <div
                 key={user._id}
                 className="w-full p-1.5  min-h-32 rounded-lg text-gray-800 font-normal    h-full flex flex-col md:flex-row justify-between gap-y-2 bg-[#FFFFFF] "
@@ -217,11 +283,86 @@ function Project() {
                   </>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-4 mt-2">
+            ))} */}
+               {modify && (
+                  <>
+                    {" "}
+                    <div
+                      className="fixed inset-0 bg-black/50 z-40"
+                      onClick={() => setModify(false)}
+                    />
+                    <div
+                      className="fixed z-50 top-1/2 left-1/2 
+        -translate-x-1/2 -translate-y-1/2
+        bg-white p-6 rounded shadow w-96"
+                    >
+                      <h2 className="text-xl font-bold mb-4">
+                        update the project{" "}
+                      </h2>
+
+                      <label className="flex flex-col w-full  " htmlFor="name">
+                        <h1>name</h1>
+                        <input
+                          placeholder="update the name"
+                          name="name"
+                          type="text"
+                          value={formData.name}
+                          onChange={handlechange}
+                          className="border p-2 w-full mb-4"
+                        />
+                      </label>
+                      <label
+                        className="flex flex-col w-full"
+                        htmlFor="discription"
+                      >
+                        <h1>discription</h1>
+                        <textarea
+                          placeholder="update the discription"
+                          type="description"
+                          name="description"
+                          value={formData.description}
+                          onChange={handlechange}
+                          className="border p-2 w-full mb-4 "
+                        />
+                      </label>
+                      <label className="flex flex-col w-full" htmlFor="status">
+                        <h1>status</h1>
+                        <select
+                          placeholder="update the discription"
+                          type="description"
+                          name="status"
+                          value={formData.status}
+                          onChange={handlechange}
+                          className="border p-2 w-full mb-4 "
+                        >
+                          <option value="assign">assign</option>
+                          <option value="pending">pending</option>
+                          <option value="completed">completed</option>
+                        </select>
+                      </label>
+
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setModify(false)}
+                          className="px-4 py-2 border rounded"
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          onClick={onHandleModify}
+                          className="px-4 py-2 bg-green-500 text-white rounded"
+                        >
+                          Update the ProjectManager
+                        </button>
+                      </div>
+                    </div>
+                  </>)}
+
+        
+        
+     
+      {/* <div className="flex items-center gap-4 mt-2">
         <button
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
@@ -251,64 +392,8 @@ function Project() {
         >
           Next
         </button>
-      </div>
-      {isEditOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setIsEditOpen(false)}
-          />
-
-          {/* Modal */}
-          <div
-            className="fixed z-50 top-1/2 left-1/2 
-        -translate-x-1/2 -translate-y-1/2
-        bg-white p-6 rounded shadow w-96"
-          >
-            <h2 className="text-xl font-bold mb-4">create the project</h2>
-
-            <label className="flex flex-col w-full  " htmlFor="name">
-              <h1>name</h1>
-              <input
-                placeholder="write the name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handlechange}
-                className="border p-2 w-full mb-4"
-              />
-            </label>
-            <label className="flex flex-col w-full" htmlFor="discreption">
-              <h1>description</h1>
-              <input
-                placeholder="write the discription"
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handlechange}
-                className="border p-2 w-full mb-4 "
-              />
-            </label>
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={setIsEditOpen(false)}
-                className="px-4 py-2 border rounded"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleCreateProject}
-                className="px-4 py-2 bg-green-500 text-white rounded"
-              >
-                create the project
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      </div> */}
+     
     </div>
   );
 }

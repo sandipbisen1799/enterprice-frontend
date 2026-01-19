@@ -5,6 +5,7 @@ import { signAPI,verifyuserAPI } from "../services/user.service.js";
 import { useNavigate } from "react-router";
 import { useApi } from "../context/contextApi.jsx";
 import Navbar from "../components/Navbar.jsx";
+import { toast } from 'react-toastify';
   
 
 function Signup() {
@@ -38,41 +39,51 @@ function Signup() {
          setUser(res?.data?.user);
          setIsLogin(true)
          setverify(true)
+         toast.success("Account created successfully! Please verify your email with OTP.");
       }
    
      
       
     
     } catch (error) {
-      console.log(error);
+     console.log(error);
+     toast.error(error.response?.data?.message || "Verification failed!");
     }
   };
      const handleVerifyUser = async (event)=>{
-      event.preventDefault()
-        const otp =formdata.otp;
-        const email = user.email;
-     
-        const form = {
-          otp,email
-        }
-         const res = verifyuserAPI(form)
-         console.log(res)
-         if(res.data?.success){
-          setverify(false);
-          checkAuth();
+ try {
+       event.preventDefault()
+         const otp =formdata.otp;
+         const email = user.email;
+      
+         const form = {
+           otp,email
+         }
+          const res = await verifyuserAPI(form)
+          console.log(res)
+          if(res.data?.success){
+           setverify(false);
+           toast.success("Account verified successfully!");
 
-        if (res.data.user.accountType == "teamMember") Navigate("/teamMember");
-      else if (res.data.user.accountType == "admin") {
-        Navigate("/admin");
-      } else {
-        Navigate("/projectmanager");
-      }}
+
+
+         if (user.accountType== "teamMember") Navigate("/teamMember");
+       else if (user.accountType == "admin") {
+         Navigate("/admin");
+       } else {
+         Navigate("/projectmanager");
+       }}
+ } catch (error) {
+  console.log(error.response.data.errors)
+   console.log(error);
+   toast.error(error.response?.data?.message || error.response.data.errors?.[0] || "Something went wrong!");
+ }
     
       }
   return (
     <>
     <Navbar/>
-    <div className="bg-[#7455daa5] h-full w-full py-32 px-4 md:py-16 md:px-12 lg:py-8 lg:px-32 flex justify-center">
+    <div className="bg-[#7455daa5] min-h-screen w-full py-32 px-4 md:py-16 md:px-12 lg:py-8 lg:px-32 flex justify-center">
       <div className="w-full lg:w-1/3 h-full bg-gray-100 rounded-2xl flex flex-col justify-center lg:gap-y-6 gap-y-3  items-center py-8  shadow-2xl px-4">
         <form
          

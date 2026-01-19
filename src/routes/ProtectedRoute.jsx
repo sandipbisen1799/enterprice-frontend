@@ -5,7 +5,7 @@ const ProtectedRoute = () => {
  const {user, loading}= useApi();
 
   if (loading) return <h2>Loading...</h2>;
-  console.log(user)
+  
 
   return user ? <Outlet /> : <Navigate to="/login" replace />;
 };

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Api } from "../context/contextApi.jsx";
 import { logoutAPI } from "../services/user.service";
 import { useLocation } from "react-router";
+import { toast } from 'react-toastify';
 
 function Navbar() {
   const { islogin, setUser, user,setIsLogin  } = useContext(Api);
@@ -27,10 +28,11 @@ function Navbar() {
         });
         navigate("/login");
         setIsLogin(false)
-        
+        toast.success("Logged out successfully!");
       }
     } catch (error) {
       console.log(error);
+      toast.error("Logout failed!");
     }
   };
   const itemClass = (

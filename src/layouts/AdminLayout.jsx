@@ -1,138 +1,129 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
-import { useState } from "react";
+import { Bell, BookUser, CircleChevronDown, FolderDot, LayoutDashboard, SquareChartGantt, User, UserCheck } from "lucide-react";
 import { logoutAPI } from "../services/user.service";
 import { useApi } from "../context/contextApi";
-import { Bell, Triangle, CircleChevronDown } from "lucide-react";
+import  profileimage from  '../assets/profileimg.png'
 function AdminLayout() {
-  const { setUser, setIsLogin } = useApi();
-  const location = useLocation();
+  const { setUser, setIsLogin,user } = useApi();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navBar,setNavbar]= useState(false)
+  const [navBar, setNavbar] = useState(false);
 
   const itemClass = (path) =>
-    `cursor-pointer w-full py-2 flex items-center text-white text-gray-900 font-semibold justify-center transition capitalize h-12
+    `cursor-pointer w-full py-3 flex items-center gap-x-4  justify-start capitalize text-white font-semibold transition
      ${
        location.pathname === path
-         ? "bg-[#7D6CCA]  font-semibold shadow-md"
-         : " hover:bg-[#7d6ccaa5] "
+         ? "bg-[#7D6CCA] shadow-sm"
+         : "hover:bg-[#7d6ccaa5]"
      }`;
 
   const logoutHandler = async () => {
     try {
       const res = await logoutAPI();
-
       if (res?.data?.success) {
         localStorage.removeItem("token");
         setUser(null);
-        navigate("/login");
         setIsLogin(false);
+        navigate("/login");
       }
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
-    <div className="flex   flex-col w-full h-screen relative  ">
-      <div className="fixed w-full  flex flex-row items-center bg-[#514390] z-40  h-16">
-        <div className=" min-w-1/2    md:px-12 flex flex-row items-center  gap-4  ">
-          <h1 className="text-white font-semibold text-2xl ">Winden</h1>
+    <div className="relative min-h-screen bg-gray-100">
+
+  
+      <header className="fixed top-0 left-0 w-full h-16 bg-[#514390] z-40 flex items-center px-4 md:px-12">
+        <div className="flex items-center gap-4 w-1/2">
+          <h1 className="text-white text-2xl font-semibold">Winden</h1>
           <input
             type="text"
-            placeholder="  search... "
-            className="bg-white w-full outline-none py-2 rounded-sm capitalize "
+         placeholder="&#xF002; Search"
+            className="font-[FontAwesome] hidden bg-white md:block w-full py-2 px-3 rounded outline-none"
           />
         </div>
-        <div className="min-w-1/2 flex flex-row items-center">
-          <div className="md:min-w-1/2 h-full"></div>
-        <div className="   min-w-1/2  px-2  flex flex-row md:ml-6  justify-evenly items-center    ">
 
-          <Bell color="#ffffff" />
-          <div className="w-12 h-10 bg-white rounded-sm">
-            {/* <img src="" alt="" /> */}
+        <div className="flex items-center justify-end w-1/2 gap-4 text-white">
+          <Bell />
+          <div onClick={() => navigate("/admin/profile")} className="w-10 h-10 cursor-pointer overflow-hidden rounded">
+            <img src={profileimage} className="inset-0 w-full h-full" alt="fg" />
+            </div> 
+          <div className="hidden md:flex flex-col text-center text-sm capitalize">
+            <span className="font-semibold text-xl ">{user.userName}</span>
+            <span>{user.accountType}</span>
           </div>
-          <div className="flex flex-col text-white capitalize ">
-            <h1>name</h1>
-            <h1>accountType</h1>
-          </div>
-          <div className=" realative  " onClick={()=>setNavbar(!navBar)}>
-            <CircleChevronDown color="#ffffff" />
-            <div className={`${navBar ? 'flex absolute z-40':'hidden'} `}> <div
-                className={`${itemClass("/profile")}  `}
-                onClick={() => navigate("/profile")}
-              >
-                profile
+
+          <div className="relative">
+            <CircleChevronDown
+              className="cursor-pointer"
+              onClick={() => setNavbar(!navBar)}
+            />
+
+            {navBar && (
+              <div className="absolute right-0  overflow-hidden top-10 bg-white shadow-md rounded w-36 z-50">
+              
+                <div
+                  className=" text-black px-4 z-100 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={logoutHandler}
+                >
+                  Logout
+                </div>
               </div>
-              <div className={`${itemClass("/login")}`} onClick={logoutHandler}>
-                logout
-              </div></div>
+            )}
           </div>
         </div>
-        </div>
-        <div className="w-1/2 h-full flex-row  justify-between items-center  "></div>
-      </div>
-      <div className="w-full flex flex-row relative  ">
+      </header>
+
+    
+      <div className="pt-16 flex">
+
+
         <button
-          className="md:hidden  bg-[#7d6ccaa5] flex flex-col justify-center cursor-pointer  top-3 fixed left-3.5 items-center z-1000"
+          className="md:hidden fixed top-20 left-4 z-50 bg-[#7D6CCA] p-2 rounded"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          <span className="block w-6 h-0.5 bg-gray-800 mb-1 capitalize"></span>
-          <span className="block w-6 h-0.5 bg-gray-800 mb-1"></span>
-          <span className="block w-6 h-0.5 bg-gray-800"></span>
+          <span className="block w-6 h-0.5 bg-white mb-1"></span>
+          <span className="block w-6 h-0.5 bg-white mb-1"></span>
+          <span className="block w-6 h-0.5 bg-white"></span>
         </button>
-        <div
-          className={`fixed top-16 left-0 ${
-    menuOpen ? "flex" : "hidden"
-  } md:flex flex-col justify-between 
-  w-2/4 md:w-1/5 
-  bg-[#6E5CC2] 
-  border-r-2 border-gray-300 shadow-lg 
-  h-[calc(100vh-4rem)] 
-  z-30`}
+
+    
+        <aside
+          className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-2/3 md:w-1/5
+          bg-[#6E5CC2] z-30 transition
+          ${menuOpen ? "block" : "hidden"} md:block`}
         >
-          <div className="flex flex-col justify-between items-center py-1">
-            <div
-              className={`${itemClass("/admin")} mt-5`}
-              onClick={() => navigate("/admin")}
-            >
-              <h1>dashboard</h1>
+          <nav className="flex flex-col mt-5 ">
+            <div className={  itemClass("/admin")} onClick={() => navigate("/admin")}>
+             <LayoutDashboard className="ml-16" fill="#fff" /> Dashboard
             </div>
-            <div
-              className={itemClass("/admin/users")}
-              onClick={() => navigate("/admin/users")}
-            >
-              <h1>users</h1>
+            <div className={itemClass("/admin/users")} onClick={() => navigate("/admin/users")}>
+             <  User className="ml-16" fill="#fff" />   Users
             </div>
-            <div
-              className={itemClass("/admin/projectmanager")}
-              onClick={() => navigate("/admin/projectmanager")}
-            >
-              <h1>projectManager</h1>
+            <div className={itemClass("/admin/projectmanager")} onClick={() => navigate("/admin/projectmanager")}>
+             <FolderDot  className="ml-16" fill="#fff" />  Project Manager
             </div>
-            <div
-              className={itemClass("/admin/projects")}
-              onClick={() => navigate("/admin/projects")}
-            >
-              <h1>projects</h1>
+            <div className={itemClass("/admin/projects")} onClick={() => navigate("/admin/projects")}>
+             <SquareChartGantt className="ml-16" fill="#fff" />  Projects
             </div>
-            <div
-              className={itemClass("/admin/ip")}
-              onClick={() => navigate("/admin/ip")}
-            >
-              <h1>ipaddress</h1>
+            <div className={itemClass("/admin/ip")} onClick={() => navigate("/admin/ip")}>
+             <BookUser className="ml-16" fill="#fff"  />  IP Address
             </div>
-             
-          </div>
-          <div className="flex flex-col justify-between items-center py-1">
-            <div className="flex flex-col gap-2  justify-between w-full  ">
-            
-            </div>
-          </div>
-        </div>
-        <div className=" w-full md:w-4/5 md:ml-[20%] md:mt-16   ">
+           
+          </nav>
+        </aside>
+
+      
+        <main
+          className="ml-0 md:ml-[20%] w-full md:w-4/5
+          h-[calc(100vh-4rem)] overflow-y-auto p-4"
+        >
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -6,9 +6,9 @@ import { Navigate, Outlet } from "react-router";
   const { user, loading } = useContext(Api);
 
   if (loading) return <p>Loading...</p>;
-  console.log(user);
   
-  const token =localStorage.getItem("token");
+  
+  const token = localStorage.getItem("token");
   if(!token){
   return <Navigate to="/login" />
   }

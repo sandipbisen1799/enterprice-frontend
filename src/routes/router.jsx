@@ -7,19 +7,20 @@ import TeamMemberLayout from "../layouts/TeamMemberLayout";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
-import Admin from "../pages/Admin";
-import ProjectManager from "../pages/ProjectManager";
-import TeamMember from "../pages/TeamMember";
+import Admin from "../pages/auth/Admin";
+import ProjectManager from "../pages/projectmanager/ProjectManager";
+import TeamMember from "../pages/teamManager/TeamMember";
 import { RoleRoute } from "./RoleRouter";
-import Profile from "../pages/profile";
+import Profile from "../pages/Profile";
 import ProtectedRoute from "./ProtectedRoute";
-import AdminPage from "../pages/AdminDashboard";
-import Project from "../pages/Project";
+import AdminPage from "../pages/auth/AdminDashboard";
+import Project from "../pages/auth/Project";
 import Contactus from "../pages/Contact-us";
-import ProjectManagerDashboard from "../pages/ProjectManagerDashbord";
-import ManagerProject from "../pages/ManagerProject";
-import Users from "../pages/User";
-import Ipaddress from "../pages/Ipaddress";
+import ProjectManagerDashboard from "../pages/projectmanager/ProjectManagerDashbord";
+import ManagerProject from "../pages/projectmanager/ManagerProject";
+import Users from "../pages/auth/User";
+import Ipaddress from "../pages/auth/Ipaddress";
+import AddProject from "../pages/auth/addProject";
 
 export const router = createBrowserRouter([
   {
@@ -61,9 +62,16 @@ export const router = createBrowserRouter([
                   path: "ip",
                   element:<Ipaddress></Ipaddress>
                  },
-                 
-                 
-                ],
+                 {
+                  path: "profile",
+                  element:<Profile></Profile>
+                 },{
+                  path: "addproject",
+                  element:<AddProject/>
+                 }
+
+
+               ],
               },
             ],
           },
@@ -84,8 +92,13 @@ export const router = createBrowserRouter([
                 path:'projects',
                 element:<ManagerProject/>
               },
-              
-              
+              {
+                path:'profile',
+                element:<Profile/>
+              },
+
+
+
                 ],
 
 
@@ -100,7 +113,11 @@ export const router = createBrowserRouter([
               {
                 path: "teammember",
                 element: <TeamMemberLayout />,
-                children: [{ index: true, element: <TeamMember /> }],
+                children: [{ index: true, element: <TeamMember /> },
+                {
+                  path: "profile",
+                  element: <Profile />
+                }],
               },
             ],
           },
