@@ -1,6 +1,6 @@
 import React from 'react';
 
-const UserMenu = ({ menu, setMenu, menuPos, users, handleModifyButton, handleOneuser, handleDelete }) => {
+const UserMenu = ({menuList, menu, setMenu, menuPos, users, handleModifyButton, handleOneuser, handleDelete }) => {
   if (!menu) return null;
 
   return (
@@ -19,7 +19,7 @@ const UserMenu = ({ menu, setMenu, menuPos, users, handleModifyButton, handleOne
           setMenu(null);
         }}
       >
-        Edit
+        {menuList.edit}
       </div>
 
       <div
@@ -29,7 +29,7 @@ const UserMenu = ({ menu, setMenu, menuPos, users, handleModifyButton, handleOne
           setMenu(null);
         }}
       >
-        User Details
+        {menuList.view}
       </div>
 
       <div
@@ -39,7 +39,7 @@ const UserMenu = ({ menu, setMenu, menuPos, users, handleModifyButton, handleOne
           setMenu(null);
         }}
       >
-        Remove
+        {menuList.delete}
       </div>
     </div>
   );

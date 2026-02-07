@@ -5,6 +5,7 @@ import { Eye,EyeOff, Trash, UserRoundPen, EllipsisVertical } from "lucide-react"
 import { useApi } from "../../context/contextApi.jsx";
 import TablePagination from "../../components/ui/TablePagination.jsx";
 import { toast } from 'react-toastify';
+import ConformationBox from "../../components/ConformationBox.jsx";
 function ProjectManager() {
   const {user}= useApi();
 
@@ -16,6 +17,8 @@ function ProjectManager() {
   const [formData,setFormData] =useState({userName:'',email:'',password:'',phoneNumber :''})
   const [modify,setModify]=useState(false);
   const [userId, setUserId] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(null);
   const [menu, setMenu] = useState({
   open: false,
   user: null,
@@ -59,22 +62,8 @@ function ProjectManager() {
     }
   }
   const handleDeletetuser = async (users)=>{
-    try {
-    console.log(user._id);
-      console.log(users._id)
-      const teamMemberId = users._id;
-      const projectManagerId =user._id;
-      if(window.confirm(`do you want to delete ${users.userName}`)){
-      const data = await deleteTeamMembersAPI(teamMemberId,projectManagerId);
-      console.log(data);
-      fetchTeamMembers();
-      toast.success("Team member deleted successfully!");
-      }
-  } catch (error) {
-    console.log(error);
-    toast.error("Failed to delete team member!");
-  }
-
+    setDeleteItem(users);
+    setShowConfirm(true);
   }
   const handleModifyButton = async(user)=>{
     try {
@@ -439,6 +428,19 @@ renderActions={(user) => (
                 </div>
               </>
             )}
+
+     {showConfirm && deleteItem && (
+       <ConformationBox
+         onClose={() => setShowConfirm(false)}
+         onConfirm={async () => {
+           const data = await deleteTeamMembersAPI(deleteItem._id, user._id);
+           console.log(data);
+           fetchTeamMembers();
+           toast.success("Team member deleted successfully!");
+         }}
+         message={`Do you want to delete ${deleteItem.userName}?`}
+       />
+     )}
     </div>
   );
 }

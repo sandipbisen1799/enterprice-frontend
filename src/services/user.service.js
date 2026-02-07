@@ -31,6 +31,11 @@ export const getAllUsers = async (page = 1, limit = 10) => {
   const res = await api.get(`/auth/users?page=${page}&limit=${limit}`);
   return res.data;
 };
+export const getAllUsersdata = async () => {
+  const res = await api.get(`/auth/user`);
+  console.log(res)
+  return res;
+};
 export const getAllUser = async () => {
   const res = await api.get("/auth/teammember");
   return res.data;
@@ -115,3 +120,19 @@ export const getBlockUser = async (page = 1, limit = 5) => {
   );
   return res.data;
 };
+export const uploadImageAPI = async (formData) => {
+  const res = await api.post('/auth/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+}
+export const changePasswordAPI = async (formData) => {
+  const res = await api.put('/auth/changepassword', formData);
+  return res.data;
+}
+export const updateProfileAPI = async (formData) => {
+  const res = await api.put('/auth/updateprofile', formData);
+  return res.data;
+}

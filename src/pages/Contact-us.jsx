@@ -6,7 +6,7 @@ function Contactus() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-[#E8E8E8] w-full   py-12 px-24 flex flex-col justify-between  items-center">
+      <div className="min-h-screen bg-[#E8E8E8] w-full   md:py-12  md:px-24 flex flex-col justify-between  items-center">
         <div className="w-full md:h-132 p-12  rounded-2xl flex flex-col md:flex-row gap-y-10   bg-[#F5F6F8] ">
           <div className="  w-full md:w-1/2 h-full  flex flex-col justify-evenly text-left">
             <div>

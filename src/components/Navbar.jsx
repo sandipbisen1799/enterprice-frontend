@@ -1,211 +1,155 @@
-import React, { useContext, useState,useEffect } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
+import React, { useContext, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Api } from "../context/contextApi.jsx";
 import { logoutAPI } from "../services/user.service";
-import { useLocation } from "react-router";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import profileimage from "../assets/profileimg.png";
 
 function Navbar() {
-  const { islogin, setUser, user,setIsLogin  } = useContext(Api);
-
+  const { islogin, setUser, user, setIsLogin } = useContext(Api);
   const navigate = useNavigate();
   const location = useLocation();
-
-
   const [menuOpen, setMenuOpen] = useState(false);
+
   const logoutHandler = async () => {
     try {
       const res = await logoutAPI();
-
       if (res?.data?.success) {
         localStorage.removeItem("token");
         setUser({
-          userName : '',
-          isVerified : false,
-          email: '',
-          accountType :''
+          userName: "",
+          isVerified: false,
+          email: "",
+          accountType: "",
         });
-        navigate("/login");
-        setIsLogin(false)
+        setIsLogin(false);
         toast.success("Logged out successfully!");
+        navigate("/login");
       }
-    } catch (error) {
-      console.log(error);
+    } catch {
       toast.error("Logout failed!");
     }
   };
-  const itemClass = (
-    path
-  ) => `px-8 py-2 hover:scale-105 hover:text-white rounded-lg text-center bg-[#7143f047] transition-all cursor-pointer 
-${
-  location.pathname === path
-    ? " text-white font-semibold bg-blue-400"
-    : "font-normal bg-[#7143f047]"
-}
 
-`;
+  const itemClass = (path) =>
+    `px-4 py-2 rounded-lg transition-all hover:scale-105 cursor-pointer ${
+      location.pathname === path
+        ? "bg-blue-500 text-white font-semibold"
+        : "bg-[#7143f047] text-gray-700"
+    }`;
 
-  const handleManagement = async () => {
-     if (!islogin) {
-  
-    navigate("/login")
-    }
-   else  if (user.accountType === "admin") {
-      navigate("/admin");
-    } else if (user.accountType === "projectManager") {
-      navigate("/projectManager");
-    } else if (user.accountType === "teamMember") {
-      navigate("/teamMember");
-    } 
+  const goProfile = () => {
+    navigate(`/${user.accountType}/profile`);
+    setMenuOpen(false);
+  };
+
+  const handleManagement = () => {
+    if (!islogin) return navigate("/login");
+
+    const routes = {
+      admin: "/admin",
+      projectManager: "/projectManager",
+      teamMember: "/teamMember",
+    };
+
+    navigate(routes[user.accountType]);
+    setMenuOpen(false);
   };
 
   return (
-    <>
-      <div className=" w-full h-20 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <div
-            className="w-full h-full bg-linear-to-br
-                from-blue-200 via-pink-100 to-yellow-100
-                blur-3xl scale-110"
-          ></div>
-        </div>
-        <div className="flex flex-row justify-between gap-x-1 w-full h-12 px-4 lg:px-9 items-center relative">
-          <div className="font-semibold text-xl lg:text-3xl text-gray-700   ">
-            Winden
-          </div>
-          <div className="hidden lg:flex flex-row gap-x-8 capitalize cursor-pointer text-[#9993D5]  font-medium text--700 text-xl  justify-between  items-center">
-            <Link to="/" className=" hover:border-b hover:text-[#8078d7]">
-              Home
-            </Link>
-            <Link
-              className=" hover:border-b hover:text-[#8078d7]"
-              onClick={handleManagement}
-            >
-              management
-            </Link>
-            <Link
-              className=" hover:border-b hover:text-[#8078d7]"
-              onClick={() => navigate("/contact-us")}
-            >
-              contact-us
-            </Link>
-          </div>
-          <button
-            className="lg:hidden flex flex-col justify-center cursor-pointer items-center"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span className="block w-6 h-0.5 bg-gray-800 mb-1"></span>
-            <span className="block w-6 h-0.5 bg-gray-800 mb-1"></span>
-            <span className="block w-6 h-0.5 bg-gray-800"></span>
+    <nav className="w-full flex items-center justify-center relative">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-200 via-pink-100 to-yellow-100 blur-3xl" />
+
+      <div className="w-full max-w-7xl px-6 py-3 flex justify-between items-center">
+        {/* Logo */}
+        <div className="font-semibold text-2xl text-gray-700">Winden</div>
+
+        {/* Desktop Links */}
+        <div className="hidden lg:flex gap-8 text-[#9993D5] text-lg font-medium">
+          <Link to="/" className="hover:text-[#8078d7]">Home</Link>
+          <button onClick={handleManagement} className="hover:text-[#8078d7]">
+            Management
           </button>
-          {menuOpen && (
-            <div className="absolute top-full right-0 rounded-xl w-1/4 bg-white/90 shadow-lg lg:hidden z-10">
-              <div className="flex flex-col items-center gap-4 py-4">
-                <Link
-                  to="/"
-                  className="border-b-2"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link onClick={() => setMenuOpen(false)}>management</Link>
-                <Link
-                  onClick={() => {
-                    setMenuOpen(false);
-
-                    navigate("/contact-us");
-                  }}
-                >
-                  contact-us
-                </Link>
-                {islogin ? (
-                  <>
-                    <button
-                      className={`${itemClass("/profile")} `}
-                      onClick={() => {
-                        navigate("/profile");
-                        setMenuOpen(false);
-                      }}
-                    >
-                      profile
-                    </button>
-                    <button
-                      className={`${itemClass("/login")} `}
-                      onClick={() => {
-
-                        logoutHandler();
-                        setMenuOpen(false);
-                      }}
-                    >
-                      logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={`${itemClass("/login")} `}
-                      onClick={() => {
-                        navigate("/login");
-                        setMenuOpen(false);
-                      }}
-                    >
-                      Log in
-                    </button>
-                    <button
-                      className={`${itemClass("/signup")} `}
-                      onClick={() => {
-                        navigate("/signup");
-                        setMenuOpen(false);
-                      }}
-                    >
-                      sign up
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-          {islogin ? (
-            <div className="hidden lg:flex flex-row gap-1 text-center items-center">
-              <button
-                className={`${itemClass("/profile")} `}
-                onClick={() => {
-                  navigate("/profile");
-                }}
-              >
-                profile
-              </button>
-              <button
-                className={`${itemClass("/login")} `}
-                onClick={logoutHandler}
-              >
-                logout
-              </button>
-            </div>
-          ) : (
-            <div className="hidden lg:flex flex-row gap-1 text-center items-center">
-              <button
-                className={`${itemClass("/login")} `}
-                onClick={() => {
-                  navigate("/login");
-                }}
-              >
-                Log in
-              </button>
-              <button
-                className={`${itemClass("/signup")} `}
-                onClick={() => {
-                  navigate("/signup");
-                }}
-              >
-                Sign up
-              </button>
-            </div>
-          )}
+          <button onClick={() => navigate("/contact-us")} className="hover:text-[#8078d7]">
+            Contact Us
+          </button>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="lg:hidden flex flex-col gap-1"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <span className="w-6 h-0.5 bg-gray-800" />
+          <span className="w-6 h-0.5 bg-gray-800" />
+          <span className="w-6 h-0.5 bg-gray-800" />
+        </button>
+
+        {/* Desktop Auth */}
+        {islogin ? (
+          <div className="hidden lg:flex items-center gap-3">
+            <img
+              src={user.imageUrl || profileimage}
+              alt="profile"
+              onClick={goProfile}
+              className="w-8 h-8 rounded-full cursor-pointer object-cover"
+            />
+            <button className={itemClass(`/${user.accountType}/profile`)} onClick={goProfile}>
+              Profile
+            </button>
+            <button className={itemClass("/login")} onClick={logoutHandler}>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div className="hidden lg:flex gap-2">
+            <button className={itemClass("/login")} onClick={() => navigate("/login")}>
+              Login
+            </button>
+            <button className={itemClass("/signup")} onClick={() => navigate("/signup")}>
+              Sign Up
+            </button>
+          </div>
+        )}
+
+        {/* Mobile Dropdown */}
+        {menuOpen && (
+          <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+        onClick={() => setMenuOpen(false)}
+          />
+          <div className="fixed z-50 right-4 top-14 bg-white shadow-lg rounded-xl w-52 lg:hidden ">
+            <div className="flex flex-col items-center gap-4 py-4">
+              <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+              <button onClick={handleManagement}>Management</button>
+              <button onClick={() => navigate("/contact-us")}>Contact Us</button>
+
+              {islogin ? (
+                <>
+                  <button className={itemClass(`/${user.accountType}/profile`)} onClick={goProfile}>
+                    Profile
+                  </button>
+                  <button className={itemClass("/login")} onClick={logoutHandler}>
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className={itemClass("/login")} onClick={() => navigate("/login")}>
+                    Login
+                  </button>
+                  <button className={itemClass("/signup")} onClick={() => navigate("/signup")}>
+                    Sign Up
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          </>
+        )}
       </div>
-    </>
+    </nav>
   );
 }
 

@@ -6,18 +6,21 @@ import {
   getProjectApi,
   updateProjectAPI,
 } from "../../services/user.service.js";
-import { Eye, EyeOff, Trash, UserRoundPen, EllipsisVertical } from "lucide-react";
+import { Eye, EyeOff, Trash, UserRoundPen, EllipsisVertical, Edit } from "lucide-react";
 
 import { toast } from 'react-toastify';
+import UserMenu from "../../components/UserMenu.jsx";
+import ConformationBox from "../../components/ConformationBox.jsx";
 function Project() {
-  const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [projects, setProjects] = useState([]);
   const [modify, setModify] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [menu, setMenu] = useState(null);
+    const [menu ,setMenu]= useState(false);
+    const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(null);
   const [formData, setFormdata] = useState({
     name: "",
     status: "",
@@ -46,20 +49,18 @@ const navigate = useNavigate();
   };
 
   const handleDelete = async (user) => {
+    setDeleteItem(user);
+    setShowConfirm(true);
+  };
+    // eslint-disable-next-line no-unused-vars
+    const handleOneuser =  async(user) => {
     try {
-      console.log(user._id);
-      const projectId = user._id;
-      if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-        const res = await deleteProjectAPI(projectId);
-        console.log(res);
-        fetchProjects();
-        toast.success("Project deleted successfully!");
-      }
+      // const projectId = user._id;
     } catch (error) {
       console.log(error);
-      toast.error("Failed to delete project!");
+      toast.error('failed to fetch project details!')
     }
-  };
+    }
   const onHandleModify = async () => {
     try {
       console.log(formData);
@@ -107,6 +108,7 @@ const navigate = useNavigate();
 ];
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProjects();
   }, [page]);
 
@@ -140,9 +142,17 @@ const navigate = useNavigate();
   <div className="flex gap-2 text-[#705CC7] text-center items-center place-content-center relative">
     <EllipsisVertical
       className="cursor-pointer"
-      onClick={() =>
-        setMenu(menu === user._id ? null : user._id)
-      }
+      onClick={(e) => {
+    e.stopPropagation();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    setMenu(user._id);
+    setMenuPos({
+      x: rect.right,
+      y: rect.bottom,
+    });
+  }}
     />
 
     {menu === user._id && (
@@ -218,7 +228,7 @@ const navigate = useNavigate();
                     <div
                       className="fixed z-50 top-1/2 left-1/2
         -translate-x-1/2 -translate-y-1/2
-        bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md mx-4"
+        bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[90vw] max-w-md"
                     >
                       <h2 className="text-xl font-bold mb-4">
                         update the project{" "}
@@ -295,7 +305,7 @@ const navigate = useNavigate();
                     <div
                       className="fixed z-50 top-1/2 left-1/2 
         -translate-x-1/2 -translate-y-1/2
-        bg-white p-6 rounded shadow w-96"
+        bg-white p-6 rounded shadow w-[90vw] max-w-sm"
                     >
                       <h2 className="text-xl font-bold mb-4">
                         update the project{" "}
@@ -394,9 +404,35 @@ const navigate = useNavigate();
           Next
         </button>
       </div> */}
+
+           <UserMenu
+             menu={menu}
+             menuList={{edit:'edit ' , view:'project details',delete:'delete'}}
+             setMenu={setMenu}
+             menuPos={menuPos}
+             users={projects}
+             handleModifyButton={handleModifyButton}
+             handleOneuser={handleOneuser}
+             handleDelete={handleDelete}
+           />
      
-    </div>
-  );
+           {showConfirm && deleteItem && (
+             <ConformationBox
+               onClose={() => setShowConfirm(false)}
+               onConfirm={async () => {
+                 const res = await deleteProjectAPI(deleteItem._id);
+                 if (res) {
+                   fetchProjects();
+                   toast.success("Project deleted successfully!");
+                 }
+               }}
+               message={`Are you sure you want to delete ${deleteItem.name}?`}
+             />
+           )}
+     
+         </div>
+       );
+
 }
 
 export default Project;

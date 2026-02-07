@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import Button from '@mui/material/Button';
 import { createProjectAPI } from "../../services/user.service.js";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 function AddProject() {
   const Navigate = useNavigate();
+  
   const [formData, setFormdata] = useState({
     name: "",
     status: "",
@@ -27,8 +29,8 @@ function AddProject() {
     try {
       const res = await createProjectAPI(formData);
       console.log(res);
-      if(res){
-        Navigate('/admin/projects')
+      if (res) {
+        Navigate("/admin/projects");
       }
       toast.success("Project created successfully!");
     } catch (error) {
@@ -164,7 +166,7 @@ function AddProject() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               className="px-5 py-2 rounded-lg border text-gray-600 hover:bg-gray-100"
-              onClick={()=>Navigate('/admin/projects')}
+              onClick={() => Navigate("/admin/projects")}
             >
               Cancel
             </button>

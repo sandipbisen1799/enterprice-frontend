@@ -1,7 +1,7 @@
 import { Api } from "../context/contextApi.jsx"; 
 import { useContext } from "react";
 import React from "react";
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet } from "react-router-dom";
  export const RoleRoute = ({ allowedRoles }) => {
   const { user, loading } = useContext(Api);
 

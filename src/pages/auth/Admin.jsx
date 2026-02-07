@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from '@mui/material/Button';
 import {
   getProjectManager,
   deleteProjectManagerAPI,
@@ -10,6 +11,7 @@ import TablePagination from '../../components/ui/TablePagination.jsx'
 import { assignProjectAPI, getAllProjectAPI,  } from "../../services/user.service.js";
 import { toast } from 'react-toastify';
 import GenericMenu from '../../components/GenericMenu.jsx';
+import ConformationBox from "../../components/ConformationBox.jsx";
 function Admin() {
   const [projectManager, setProjectManager] = useState([]);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -21,6 +23,8 @@ function Admin() {
   const [menu, setMenu] = useState(null);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(null);
   const [formData, setFormdata] = useState({
     name: "",
     status: "",
@@ -66,19 +70,8 @@ function Admin() {
     }
   };
   const handleDelete = async (user) => {
-    try {
-      const projectManagerId = user._id;
-      if (window.confirm(`Are you sure you want to delete ${user.userName}?`)) {
-        const res = await deleteProjectManagerAPI(projectManagerId);
-        if(res?.success){
-          fetchProjectManager();
-          toast.success("Project manager deleted successfully!");
-        }
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to delete project manager!");
-    }
+    setDeleteItem(user);
+    setShowConfirm(true);
   };
  
   const addprojectmanager = async () => {
@@ -173,17 +166,17 @@ function Admin() {
   }, [page]);
 
   return (
-    <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 " onClick={() => setMenu(null)}>
+    <div className="min-h-screen w-full  px-5 bg-[#F7F7F7] flex flex-col items-center gap-3 " onClick={() => setMenu(null)}>
       <div className="w-full h-20 justify-between flex flex-row items-center ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           project manager list
         </h1>
-        <button
-          className="px-6 py-2 hover:scale-101 hover:text-white rounded-lg text-gray-800 font-semibold text-center bg-[#7143f047] transition-all cursor-pointer capitalize"
+        <Button
+          variant="contained"
           onClick={() => setIsEditOpen(true)}
         >
           add project manager
-        </button>
+        </Button>
       </div>
       {projectManager.length==0 ?(<h2>there are no project manager</h2>):(  
         <TablePagination
@@ -555,6 +548,20 @@ renderActions={(user) => {
     </>
 
         
+         )}
+
+      {showConfirm && deleteItem && (
+        <ConformationBox
+          onClose={() => setShowConfirm(false)}
+          onConfirm={async () => {
+            const res = await deleteProjectManagerAPI(deleteItem._id);
+            if (res?.success) {
+              fetchProjectManager();
+              toast.success("Project manager deleted successfully!");
+            }
+          }}
+          message={`Are you sure you want to delete ${deleteItem.userName}?`}
+        />
       )}
     </div>
   );

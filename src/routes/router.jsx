@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
 import React from "react";
 import Rootlayout from "../layouts/Rootlayout";
 import AdminLayout from "../layouts/AdminLayout";
@@ -30,7 +30,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
       { path: "signup", element: <Signup /> },
-      { path: "profile", element: <Profile /> },
+   
       { path: "contact-us", element: <Contactus /> },
      
       {

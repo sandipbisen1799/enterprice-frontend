@@ -7,6 +7,7 @@ import {
   handleunblockUserAPI,
   updateUser,
 } from "../../services/user.service";
+
 // import { useNavigate } from "react-router";
 import { Eye, EyeOff, UserRoundPen, Trash, User, EllipsisVertical } from "lucide-react";
 // import { useApi } from "../context/contextApi";
@@ -14,8 +15,10 @@ import Table from "../../components/ui/Table";
 import { toast } from 'react-toastify';
 import TablePagination from "../../components/ui/TablePagination";
 import UserMenu from "../../components/UserMenu";
+import ConformationBox from "../../components/ConformationBox";
 function Users({ navBar }) {
   // const navigate = useNavigate();
+   const [showPassword, setShowPassword] = useState(false);
   const [menu ,setMenu]= useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [page, setPage] = useState(1);
@@ -26,7 +29,7 @@ function Users({ navBar }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [modify, setModify] = useState(false);
   const [oneUser, setOneUser] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+ 
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -48,6 +51,7 @@ function Users({ navBar }) {
       [name]: type === "checkbox" ? checked : value,
     }));
   }
+const [conformation,setConformation]= useState(false);
 
   const handleOneuser = async (user) => {
     try {
@@ -75,13 +79,11 @@ function Users({ navBar }) {
   };
   const handleDelete = async (user) => {
     try {
-      const _id = user._id;
-      if (window.confirm(`Are you sure you want to delete ${user.userName}?`)) {
-        const res = await deleteUser(_id);
-        console.log(res);
-        fetchUsers();
-        toast.success("User deleted successfully!");
-      }
+      setUserId(user._id);
+      setConformation(true);
+
+
+      
     } catch (error) {
       console.log(error);
       toast.error("Failed to delete user!");
@@ -174,7 +176,7 @@ const handleModifyButton = async(user)=>{
   }
 }
   return (
-    <div  onClick={()=>setMenu(false)} className="min-h-screen px-5  bg-[#F7F7F7]  flex flex-col items-center gap-3 relative  ">
+    <div  onClick={()=>setMenu(false)} className="min-h-screen px-5   bg-[#F7F7F7]  flex flex-col items-center gap-3 relative  ">
       <div className="w-full h-20  justify-between flex flex-row  items-center  ">
         <h1 className="text-2xl font-bold capitalize text-gray-800">
           All User list
@@ -566,6 +568,7 @@ renderActions={(user) => (
         </>
       )}
       <UserMenu
+      menuList={{edit:'Edit',view:'User Details',delete:'Remove'}}
         menu={menu}
         setMenu={setMenu}
         menuPos={menuPos}
@@ -687,6 +690,20 @@ renderActions={(user) => (
           </div>
         </>
       )}
+      {conformation && (
+      <ConformationBox
+        onClose={() => setConformation(false)}
+        onConfirm={async () => {
+          const res = await deleteUser(userId);
+          if (res) {
+            fetchUsers();
+            toast.success("User deleted successfully!");
+          }
+        }}
+        message="Are you sure you want to delete this user?"
+      />
+      )
+      }
     </div>
   );
 }

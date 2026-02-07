@@ -1,222 +1,419 @@
-import React, { useState } from "react";
-import Button from "../components/ui/Button";
+import React, { useEffect, useRef, useState } from "react";
 import profileimage from "../assets/images/laptop.png";
-import { Share } from "lucide-react";
 import { useApi } from "../context/contextApi";
-import { reverifyuserAPI, verifyuserAPI } from "../services/user.service";
-import { toast } from 'react-toastify';
-
+import {
+  changePasswordAPI,
+  reverifyuserAPI,
+  uploadImageAPI,
+  verifyuserAPI,
+  updateProfileAPI,
+} from "../services/user.service";
+import { toast } from "react-toastify";
+import { Camera, Eye,EyeOff } from "lucide-react";
 function Profile() {
+  const { user, checkAuth } = useApi();
 
-  const {user,checkAuth} = useApi();
-  const [otpInput ,setOtpInput] = useState(false);
+  /* ---------------- STATE ---------------- */
+  const [isEditing, setIsEditing] = useState(false);
+  const [otpInput, setOtpInput] = useState(false);
+  const [imageUrl, setImageUrl] = useState(user.imageUrl || "");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [showPrevious, setShowPrevious] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showRetype, setShowRetype] = useState(false);
+  const [profileData, setProfileData] = useState({
+    userName: user.userName || "",
+    phoneNumber: user.phoneNumber || "",
+  });
+  const[modifyPassword,setModifyPassword]=useState(false);
 
-  const [formData, setFormData] = useState({ otp: "" });
-    function changeHandler(event) {
-    const { name, type, checked, value } = event.target;
-    setFormData((prevFormdata) => ({
-      ...prevFormdata,
-      [name]: type === "checkbox" ? checked : value,
-    }));}
-  const handleverify= async ()=>{
+  const [formData] = useState({
+    otp: "",
+
+  });
+    const [password, setPassword] = useState({
+    priviouspassword: "",
+    password: "",
+    retypePassword: "",
+  });
+
+  /* ---------------- EFFECT ---------------- */
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProfileData({
+      userName: user.userName || "",
+      phoneNumber: user.phoneNumber || "",
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setImageUrl(user.imageUrl || "");
+  }, [user]);
+
+  /* ---------------- HANDLERS ---------------- */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPassword((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
     try {
-      const email ={ email: user.email} ;
-      const data = await reverifyuserAPI(email);
-      console.log(data);
-      if(data?.data.success){
-      setOtpInput(true)
-      toast.success("OTP sent to your email!");
-    }
+      await updateProfileAPI(profileData);
+      toast.success("Profile updated successfully");
+      setIsEditing(false);
+      checkAuth();
     } catch (error) {
-      console.log(error)
-      toast.error(error.response?.data?.message || "Failed to send OTP!");
+      toast.error(error.response?.data?.message || "Update failed");
+    }
+  };
+const inputsRef = useRef([]);
+
+const handleEnterKey = (e, index) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    inputsRef.current[index + 1]?.focus();
+  }
+};
+
+
+  const handleCancelEdit = () => {
+    setProfileData({
+      userName: user.userName,
+      phoneNumber: user.phoneNumber,
+    });
+    setIsEditing(false);
+  };
+
+  /* ---------------- PASSWORD ---------------- */
+  const handleChangePassword = async () => {
+    setModifyPassword(true);
+    
+    }
+
+    // try {
+    //   await changePasswordAPI({ password: formData.password });
+    //   toast.success("Password changed successfully");
+    //   setFormData({ otp: "", password: "", retypePassword: "" });
+    // } catch (error) {
+    //   toast.error(error.response?.data?.message || "Password change failed");
+    // }
+  
+
+  /* ---------------- OTP ---------------- */
+  const handleVerifyRequest = async () => {
+    try {
+      await reverifyuserAPI({ email: user.email });
+      setOtpInput(true);
+      toast.success("OTP sent to your email");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send OTP");
+    }
+  };
+  const submitPassword=async()=>{
+    if (password.password !== password.retypePassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+     if (password.password == password.priviouspassword) {
+      toast.error("new password and privios password is not same");
+      return;
+    }
+    try {
+      const formData ={ priviouspassword: password.priviouspassword, password: password.password }
+      await changePasswordAPI(formData);
+      toast.success("Password changed successfully");
+      setPassword({ priviouspassword: "", password: "", retypePassword: "" });
+      setModifyPassword(false);
+    }
+      catch (error) {
+      toast.error(error.response?.data?.message || "Password change failed");
     }
   }
-  const handleverifyuser = async ()=>{
-  try {
-      const form ={
-        email :user.email,
-        otp:formData.otp
-      }
-      const data = await verifyuserAPI(form);
-  console.log(data);
-      setOtpInput(false);
-     checkAuth();
-     toast.success("Account verified successfully!");
-    
-  } catch (error) {
-    console.log(error)
-    toast.error(error.response?.data?.message || "Verification failed!");
 
-  }
-  }
-  
+  const handleVerifyUser = async () => {
+    try {
+      await verifyuserAPI({ email: user.email, otp: formData.otp });
+      toast.success("Account verified");
+      setOtpInput(false);
+      checkAuth();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Verification failed");
+    }
+  };
+
+  /* ---------------- IMAGE ---------------- */
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+      toast.error("Only image files allowed");
+      return;
+    }
+
+    setSelectedFile(file);
+    setImageUrl(URL.createObjectURL(file));
+  };
+
+  const submitImage = async () => {
+    if (!selectedFile) return;
+
+    const form = new FormData();
+    form.append("image", selectedFile);
+
+    try {
+      await uploadImageAPI(form);
+      toast.success("Image uploaded");
+      setSelectedFile(null);
+      checkAuth();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Upload failed");
+    }
+  };
+
+  /* ---------------- UI ---------------- */
   return (
-   <div className="min-h-screen px-5 bg-[#F7F7F7] flex flex-col gap-3 ">
-     <div className="w-full h-20 justify-between flex flex-row items-center ">
-       <h1 className="text-2xl font-bold capitalize text-gray-800">Profile</h1>
-     </div>
-      <div className="flex px-4 flex-col gap-y-2 border-b-2 py-4  border-gray-200 ">
-        <div className="flex flex-row justify-items-start   gap-6 ">
-          <div className="w-36 h-36 overflow-hidden  flex justify-start border-2 border-gray-300 p-3 rounded-full">
-            <img
-              src={profileimage}
-              className="inset-0  w-full h-full"
-              alt="fg"
+    <div className="min-h-screen w-full px-5 py-8 bg-gradient-to-br flex items-center justify-center from-blue-50 to-indigo-100">
+      <div className="max-w-4xl   bg-white rounded-lg shadow-lg p-8">
+
+        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Profile</h1>
+
+        {/* PROFILE IMAGE */}
+        <div className="flex  flex-col items-center gap-6 mb-8 ">
+          <div className=" w-36 h-36 rounded-full overflow-hidden border-4 border-indigo-200 relative">
+              {isEditing && (
+              <>
+               
+              
+                  <div className="absolute w-12 h-12 -bottom-1 left-1/2  transform -translate-x-1/2 flex items-end justify-center">
+              <label className="cursor-pointer  bg-gray-100    flex flex-col items-top justify-between text-gray-600 px-2 py-2 rounded-full ">
+                 <input type="file" className=""  accept="image/*" hidden onChange={handleImageChange} />
+                  <Camera    className="inline-block   " />
+                 
+                </label>
+            </div>
+                
+              </>
+            )}
+           
+          <img
+            src={imageUrl || profileimage}
+            alt="profile"
+            className="w-full h-full rounded-full object-cover  shadow-md"
+          />
+          </div>
+          <div className="flex gap-2">
+            {isEditing && (
+              <>
+               
+                {selectedFile && (
+                  <button
+                    onClick={submitImage}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Save Image
+                  </button>
+                )}
+              </>
+            )}
+            {!isEditing ? (
+              <button onClick={() => setIsEditing(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors">
+                Edit Profile
+              </button>
+            ) : (
+              <>
+                <button onClick={handleCancelEdit} className="border border-gray-300 px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleSaveProfile} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors">
+                  Save Changes
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* PROFILE INFO */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input
+              name="userName"
+                           ref={(el) => (inputsRef.current[0] = el)}
+  onKeyDown={(e) => handleEnterKey(e, 0)}
+              value={profileData.userName}
+              readOnly={!isEditing}
+              onChange={handleChange}
+              className={`w-full border p-3 rounded-lg ${!isEditing ? 'bg-gray-50' : 'bg-white'} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+              placeholder="Username"
             />
           </div>
-          <div className="flex flex-col justify-between items-left p-3 gap-2.5 ">
-            <h1 className="font-semibold text-black text-lg capitalize ">
-              Profile picture
-            </h1>
-            <div className="flex flex-row gap-x-1 ">
-              <button className="flex py-2 px-4 text-center items-center text-white capitalize rounded-xl border boreder-gray-200 hover:bg-[#8755ea] bg-[#9B6CF8] cursor-pointer">
-                {" "}
-                <Share color="#fff" />
-                upload image
-              </button>
-              <button className="flex py-1 px-4 rounded-lg text-center items-center bg-white   capitalize ">
-                {" "}
-                remove
-              </button>
-            </div>
-            <h1 className="font-semibold text-sm text-gray-400 ">
-              we support png jpg anf gif under 10 mb{" "}
-            </h1>
-          </div>
-        </div>
-        <div className="w-full h-full flex gap-5  flex-col  ">
-          <div className="flex flex-row gap-5 w-full ">
-            <label
-              className="flex w-full flex-col capitalize gap-1 text-gray-600 font-medium"
-              htmlFor="name"
-            >
-              <h1>userName</h1>
-              <input
-                type="text"
-                placeholder={`${user.userName}`}
-                className="w-full text-black py-2 placeholder:px-5 outline-none border-2 rounded-xl border-gray-200"
-              />
-            </label>
-            <label
-              className="flex flex-col w-full capitalize gap-1 text-gray-600 font-medium"
-              htmlFor="email"
-            >
-              <h1>email</h1>
-              <input
-                placeholder={`${user.email}`}
-                type="email"
-                className="w-full text-black placeholder:px-5 py-2 outline-none border-2 rounded-xl border-gray-200"
-              />
-            </label>
-          </div>
-          <div className="flex flex-row gap-5 w-full ">
-            <label
-              className="flex w-full flex-col capitalize gap-1 text-gray-600 font-medium"
-              htmlFor="name"
-            >
-              <h1>accountType</h1>
-              <input
-                type="text"
-                placeholder={`${user.accountType}`}
-                className="w-full text-black py-2 placeholder:px-5 outline-none border-2 rounded-xl border-gray-200"
-              />
-            </label>
-            <label
-              className="flex w-full flex-col capitalize gap-1 text-gray-600 font-medium"
-              htmlFor="name"
-            >
-              <h1>phoneNumber</h1>
-              <input
-                type="text"
-                placeholder={`9755149009`}
-                className="w-full text-black py-2 placeholder:px-5 outline-none border-2 rounded-xl border-gray-200"
-              />
-            </label>
-            
-          </div>
-          <h1 className="font-semibold text-sm text-gray-400 ">
-              used to log in into your account{" "}
-            </h1>
-          {
-            otpInput &&(
-              <>
-                <div className=" h-full flex flex-col items-center gap-5 ">
-                  <h1 className="font-semibold text-sm text-gray-800">enter the otp to verify the user</h1>
-                  <label htmlFor="otp"   >
-                      <input type="otp" name="otp" onChange={changeHandler} value={formData.otp} placeholder="enter the otp"  className="w-full  border-b-2 outline-none border-gray-600  "  />
-                      
-                  </label>
-                    <>
-                <button className="px-10 py-2 border-2 bg-[] border-gray-200 font-semibold text-sm cursor-pointer capitalize rounded-lg hover:bg-[#8755ea] bg-[#9B6CF8] text-white" onClick={handleverifyuser}>
-          verify the user{" "}
-        </button>
-
-
-              </>
-                
-                </div>
-              </>
-            )
-          }
-    
-            { !otpInput && ( !user.isVerified  &&  (
-              <>
-                <button className="px-8 py-2 border-2 bg-[] border-gray-200 font-semibold text-sm cursor-pointer capitalize rounded-lg hover:bg-[#8755ea] bg-[#9B6CF8] text-white" onClick={handleverify}>
-          verify the user{" "}
-        </button>
-              </>
-            ))}
-        </div>
-      </div>
-      <div className="flex px-4 flex-col gap-y-2 justify-between border-b-2 py-4   border-gray-200 ">
-        <div className="w-full h-full flex flex-row gap-5  justify-between  ">
-          <div className="flex  flex-col gap-1 justify-between ">
-            <h1 className="font-semibold text-lg capitalize">password</h1>
-            <h1 className="font-semibold text-sm text-gray-400 ">
-              login with your password{" "}
-            </h1>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input
+              value={user.email}
+              readOnly
+              className="w-full border p-3 rounded-lg bg-gray-100 text-gray-600"
+            />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+            <input
+              value={user.accountType}
+              readOnly
+              className="w-full border p-3 rounded-lg bg-gray-100 text-gray-600"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <input
+                         ref={(el) => (inputsRef.current[1] = el)}
+  onKeyDown={(e) => handleEnterKey(e, 1)}
+              name="phoneNumber"
+              value={profileData.phoneNumber}
+              readOnly={!isEditing}
+              onChange={handleChange}
+              className={`w-full border p-3 rounded-lg ${!isEditing ? 'bg-gray-50' : 'bg-white'} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+              placeholder="Phone number"
+            />
+          </div>
+        </div>
 
-            <button className="px-4 py-2 border-2 border-gray-200 font-semibold text-sm text-gray-800 capitalize rounded-lg " >
-              {" "}
-              change password
+        {/* VERIFY */}
+        {!user.isVerified && !otpInput && (
+          <div className="mb-6">
+            <button onClick={handleVerifyRequest} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+              Verify Account
+            </button>
+          </div>
+        )}
+
+        {otpInput && (
+          <div className="flex gap-4 mb-6">
+            <input
+              name="otp"
+              value={formData.otp}
+              onChange={handlePasswordChange}
+              placeholder="Enter OTP"
+              className="flex-1 border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button onClick={handleVerifyUser} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors">
+              Verify
+            </button>
+          </div>
+        )}
+
+        {/* PASSWORD */}
+        <div className="border-t pt-6">
+     
+          <button onClick={handleChangePassword} className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded-lg transition-colors">
+            Change Password
+          </button>
+        </div>
+      
+      </div>
+      {modifyPassword && (
+  <>
+    {/* Overlay */}
+    <div
+      className="fixed inset-0 bg-black/50 z-40"
+        onClick={() => setModifyPassword(false)}
+    />
+
+    {/* Centered Modal */}
+    <div className="fixed z-50 flex items-center justify-center">
+      <div className="bg-white w-[90vw] max-w-md rounded-lg shadow-xl p-6">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          Change Password
+        </h2>
+
+        <div className="space-y-4">
+           <div className="relative">
+             <input
+               ref={(el) => (inputsRef.current[0] = el)}
+  onKeyDown={(e) => handleEnterKey(e, 0)}
+
+               type={showPrevious ? "text" : "password"}
+               name="priviouspassword"
+            
+               value={password.priviouspassword}
+               onChange={handlePasswordChange}
+               placeholder="Previous password"
+               className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+             />
+             <button
+               type="button"
+               onClick={() => setShowPrevious(!showPrevious)}
+               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+             >
+               {showPrevious ? <EyeOff size={20} /> : <Eye size={20} />}
+             </button>
+           </div>
+          <div className="relative">
+            <input
+              ref={(el) => (inputsRef.current[1] = el)}
+  onKeyDown={(e) => handleEnterKey(e, 1)}
+
+              type={showNew ? "text" : "password"}
+              name="password"
+              value={password.password}
+              onChange={handlePasswordChange}
+              placeholder="New password"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNew(!showNew)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <input
+              type={showRetype ? "text" : "password"}
+              name="retypePassword"
+              value={password.retypePassword}
+              onChange={handlePasswordChange}
+                ref={(el) => (inputsRef.current[2] = el)}
+  onKeyDown={(e) => handleEnterKey(e, 2)}
+
+              placeholder="Retype password"
+              className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowRetype(!showRetype)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showRetype ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
-      </div>
-      <div className=" flex flex-row justify-end gap-2 px-4 ">
-        <button className="px-8 py-2 border-2 border-gray-200 font-semibold text-sm cursor-pointer text-gray-800 capitalize rounded-lg ">
-          {" "}
-          Cancel
-        </button>
-        <button className="px-8 py-2 border-2 bg-[] border-gray-200 font-semibold text-sm cursor-pointer capitalize rounded-lg hover:bg-[#8755ea] bg-[#9B6CF8] text-white">
-          save{" "}
-        </button>
-      </div>
-      {/* {
-        passwordButton && (
-          <>
-             <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setModify(false)}
-          />
-          <div
-            className="fixed z-50 top-1/2 left-1/2 
-        -translate-x-1/2 -translate-y-1/2
-        bg-white p-6 rounded shadow w-96"
-          >
-            
-          
-           </div> 
-            </>
-        )
-      } */}
 
-      {/* <Button variant='success' size='sm' className='' >
-        add user
-      </Button> */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={() => setModifyPassword(false)}
+            className="border px-5 py-2 rounded-lg hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+            onClick={submitPassword}
+          >
+            Change Password
+          </button>
+        </div>
+      </div>
+    </div>
+  </>
+)}
+
+  
+
     </div>
   );
 }

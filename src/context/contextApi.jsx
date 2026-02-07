@@ -1,6 +1,7 @@
 import React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { authAPI } from "../services/user.service";
+// eslint-disable-next-line react-refresh/only-export-components
 export const Api = createContext();
 
 function ApiProvider({ children }) {
@@ -17,10 +18,10 @@ function ApiProvider({ children }) {
 
   const [islogin ,setIsLogin] = useState(false)
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const res = await authAPI();
-    
+
       setUser(res?.data?.user);
   console.log(user)
   if(user){
@@ -28,18 +29,18 @@ function ApiProvider({ children }) {
   }
     } catch (error) {
       console.error("Auth failed:", error);
-      
+
 
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   return (
     <Api.Provider
@@ -49,8 +50,9 @@ function ApiProvider({ children }) {
         loading,
         setLoading,
         islogin,
-        checkAuth,
         setIsLogin,
+        checkAuth,
+          
       
       }}
     >
@@ -59,5 +61,6 @@ function ApiProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useApi = () => useContext(Api);
 export { ApiProvider };
