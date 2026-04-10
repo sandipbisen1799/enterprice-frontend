@@ -20,7 +20,7 @@ import ProjectManagerDashboard from "../pages/projectmanager/ProjectManagerDashb
 import ManagerProject from "../pages/projectmanager/ManagerProject";
 import Users from "../pages/auth/User";
 import Ipaddress from "../pages/auth/Ipaddress";
-import AddProject from "../pages/auth/addProject";
+import AddProject from "../pages/auth/AddProject";
 
 export const router = createBrowserRouter([
   {
