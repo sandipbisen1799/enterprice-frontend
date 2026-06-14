@@ -49,17 +49,22 @@ setError("");
       const res = await loginAPI(formdata);
       console.log(res.data.success);
       if (res.data.success) {
-        localStorage.setItem("token", res.data.token);
-        setUser(res.data?.user);
+        const token = res.data.token || res.data.data?.token;
+        localStorage.setItem("token", token);
+        const userData = res.data?.user || res.data.data?.user;
+        if (userData) {
+          userData.accountType = userData.role === 'superadmin' ? 'admin' : 'user';
+          userData.userName = userData.name;
+        }
+        setUser(userData);
         setIsLogin(true);
         toast.success("Login successful ✅");
 
-      }
-      if (res.data.user.accountType == "teamMember") Navigate("/teamMember");
-      else if (res.data.user.accountType == "admin") {
-        Navigate("/admin");
-      } else {
-        Navigate("/projectmanager");
+        if (userData && userData.accountType === "admin") {
+          Navigate("/admin");
+        } else {
+          Navigate("/");
+        }
       }
     } catch (error) {
       console.log(error);

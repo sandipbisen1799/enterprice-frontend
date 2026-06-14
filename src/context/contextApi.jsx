@@ -21,16 +21,17 @@ function ApiProvider({ children }) {
   const checkAuth = useCallback(async () => {
     try {
       const res = await authAPI();
+      const userData = res?.data?.data?.user || res?.data?.user;
 
-      setUser(res?.data?.user);
-  console.log(user)
-  if(user){
-    setIsLogin(true)
-  }
+      if (userData) {
+        // Map backend properties to frontend conventions
+        userData.accountType = userData.role === 'superadmin' ? 'admin' : 'user';
+        userData.userName = userData.name;
+        setUser(userData);
+        setIsLogin(true);
+      }
     } catch (error) {
       console.error("Auth failed:", error);
-
-
     } finally {
       setLoading(false);
     }

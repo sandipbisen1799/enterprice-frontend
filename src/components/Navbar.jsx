@@ -39,12 +39,14 @@ function Navbar() {
     }`;
 
   const goProfile = () => {
-    navigate(`/${user.accountType}/profile`);
+    if (user?.accountType) {
+      navigate(`/${user.accountType}/profile`);
+    }
     setMenuOpen(false);
   };
 
   const handleManagement = () => {
-    if (!islogin) return navigate("/login");
+    if (!islogin || !user?.accountType) return navigate("/login");
 
     const routes = {
       admin: "/admin",
@@ -52,7 +54,9 @@ function Navbar() {
       teamMember: "/teamMember",
     };
 
-    navigate(routes[user.accountType]);
+    if (routes[user.accountType]) {
+      navigate(routes[user.accountType]);
+    }
     setMenuOpen(false);
   };
 
@@ -89,12 +93,12 @@ function Navbar() {
         {islogin ? (
           <div className="hidden lg:flex items-center gap-3">
             <img
-              src={user.imageUrl || profileimage}
+              src={user?.imageUrl || profileimage}
               alt="profile"
               onClick={goProfile}
               className="w-8 h-8 rounded-full cursor-pointer object-cover"
             />
-            <button className={itemClass(`/${user.accountType}/profile`)} onClick={goProfile}>
+            <button className={itemClass(`/${user?.accountType || 'user'}/profile`)} onClick={goProfile}>
               Profile
             </button>
             <button className={itemClass("/login")} onClick={logoutHandler}>
@@ -127,7 +131,7 @@ function Navbar() {
 
               {islogin ? (
                 <>
-                  <button className={itemClass(`/${user.accountType}/profile`)} onClick={goProfile}>
+                  <button className={itemClass(`/${user?.accountType || 'user'}/profile`)} onClick={goProfile}>
                     Profile
                   </button>
                   <button className={itemClass("/login")} onClick={logoutHandler}>

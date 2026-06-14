@@ -71,29 +71,29 @@ const {setUser ,setIsLogin,user} = useApi();
  try {
        event.preventDefault()
        
-         const email = user.email;
-      const otpRegex = /^\d{4}$/;
-      if(!otpRegex.test(otp)){
-        setError('Invalid Otp')
-        return;
-      }
-         const form = {
-           otp,email
-         }
-          const res = await verifyuserAPI(form)
-          console.log(res)
-          if(res.data?.success){
-           setverify(false);
-           toast.success("Account verified successfully!");
+          const email = user?.email;
+       const otpRegex = /^\d{4}$/;
+       if(!otpRegex.test(otp)){
+         setError('Invalid Otp')
+         return;
+       }
+          const form = {
+            otp,email
+          }
+           const res = await verifyuserAPI(form)
+           console.log(res)
+           if(res.data?.success){
+            setverify(false);
+            toast.success("Account verified successfully!");
 
 
 
-         if (user.accountType== "teamMember") Navigate("/teamMember");
-       else if (user.accountType == "admin") {
-         Navigate("/admin");
-       } else {
-         Navigate("/projectmanager");
-       }}
+          if (user?.accountType== "teamMember") Navigate("/teamMember");
+        else if (user?.accountType == "admin") {
+          Navigate("/admin");
+        } else {
+          Navigate("/projectmanager");
+        }}
  } catch (error) {
   console.log(error?.response?.data?.errors)
    console.log(error);

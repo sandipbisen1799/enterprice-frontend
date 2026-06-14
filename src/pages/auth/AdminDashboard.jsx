@@ -5,322 +5,300 @@ import {
   Card,
   CardContent,
   Typography,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
   Chip,
-  Skeleton,
-  Alert,
+  LinearProgress,
+  Divider,
 } from '@mui/material';
 import {
-  People as PeopleIcon,
-  Group as GroupIcon,
-  Business as BusinessIcon,
-  Assignment as AssignmentIcon,
-} from '@mui/icons-material';
-import { getAllUsers, getAllProjectAPI, getAllUsersdata } from '../../services/user.service';
+  Users as UsersIcon,
+  Tv as AdIcon,
+  Trophy as TournamentIcon,
+  TrendingUp as GrowthIcon,
+  DollarSign as RevenueIcon,
+  Activity as ActiveIcon,
+  AlertCircle as PendingIcon,
+} from 'lucide-react';
+import { getAnalytics } from '../../services/admin.service';
 import { toast } from 'react-toastify';
-import TablePagination from '../../components/ui/TablePagination';
-import Table from '../../components/ui/Table';
-
 
 function AdminDashboard() {
-    const [users, setUsers] = useState([]);
-    const [projectManagers, setProjectManagers] = useState([]);
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [blockedUsers, setBlockedUsers] = useState([]);
-   
-
-
-  const [selectedBox,SetSelectedBox]= useState('Users');
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalTeamMembers: 0,
-    totalProjectManagers: 0,
-    totalProjects: 0,
-  });
-  const [projects, setProjects] = useState([]);
-  const [userMap, setUserMap] = useState({});
-  const [page, setPage] = useState(1);
-  const pageSize = 5; // Items per page
-   const fetchUsers = async () => {
-      try {
-        
-        const data = await getAllUsersdata();
-        setUsers(data.data.users || []);
-        setProjectManagers(data.data.users.filter(user => user.accountType === 'projectManager'));
-        setTeamMembers(data.data.users.filter(user => user.accountType === 'teamMember'));
-        setBlockedUsers(data.data.users.filter(user => user.active == 'block' ));
-        console.log(data);
-        
-      } catch (error) {
-        console.log(error.response?.data || error.message);
-      }
-    };
-
-    useEffect(() => {
-        fetchUsers();
-      }, [page]);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
+    const fetchAnalytics = async () => {
       try {
-        // Fetch all users with large limit to get all
-        const usersRes = await getAllUsers(1, 1000);
-        const users = usersRes.users || [];
-
-        // Create user map for quick lookup
-        const map = {};
-        users.forEach(user => {
-          map[user._id] = user.userName;
-        });
-        setUserMap(map);
-
-        // Fetch projects
-        const projectsRes = await getAllProjectAPI();
-        const projectsData = projectsRes.data?.projects || projectsRes.projects || [];
-
-        // Calculate stats
-        const totalUsers = users.length;
-        const totalTeamMembers = users.filter(u => u.accountType === 'teamMember').length;
-        const totalProjectManagers = users.filter(u => u.accountType === 'projectManager').length;
-        const totalProjects = projectsData.length;
-
-        setStats({
-          totalUsers,
-          totalTeamMembers,
-          totalProjectManagers,
-          totalProjects,
-        });
-        setProjects(projectsData);
-      } catch (err) {
-        console.error('Error loading dashboard data:', err);
-        setError('Failed to load dashboard data');
-        toast.error('Failed to load dashboard data');
+        const data = await getAnalytics();
+        setAnalytics(data);
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to load dashboard analytics');
       } finally {
         setLoading(false);
       }
     };
-
-    loadData();
+    fetchAnalytics();
   }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>Loading Analytics...</Typography>
+        <LinearProgress color="primary" />
+      </Box>
+    );
+  }
+
+  const { users, ads, games, tournaments, transactions, orders, topUsers } = analytics || {
+    users: { total: 0, verified: 0, newToday: 0, growthRate: 0 },
+    ads: { total: 0, completed: 0, completionRate: 0, totalRevenue: 0, revenueByNetwork: [] },
+    games: { total: 0, today: 0 },
+    tournaments: { total: 0, active: 0 },
+    transactions: { total: 0, pendingWithdrawals: 0 },
+    orders: { total: 0, pending: 0 },
+    topUsers: []
+  };
 
   const statCards = [
     {
-      title: 'Total Users',
-      name: 'Users',
-      value: stats.totalUsers,
-      icon: <PeopleIcon fontSize="large" />,
-      color: '#1976d2',
+      title: 'Total Players',
+      value: users.total,
+      subtitle: `${users.verified} Verified | +${users.newToday} Today`,
+      icon: <UsersIcon size={24} />,
+      color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     },
     {
-      title: 'Team Members',
-      name: 'teamMember',
-      value: stats.totalTeamMembers,
-      icon: <GroupIcon fontSize="large" />,
-      color: '#388e3c',
+      title: 'Ad Revenue (Est.)',
+      value: `$${parseFloat(ads.totalRevenue).toFixed(2)}`,
+      subtitle: `${ads.completed} Completed | ${ads.completionRate}% Rate`,
+      icon: <RevenueIcon size={24} />,
+      color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
     },
     {
-      title: 'Project Managers',
-      name: 'ProjectManagers',
-      value: stats.totalProjectManagers,
-      icon: <BusinessIcon fontSize="large" />,
-      color: '#f57c00',
+      title: 'Games Played',
+      value: games.total,
+      subtitle: `+${games.today} Matches Today`,
+      icon: <ActiveIcon size={24} />,
+      color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
     },
     {
-      title: 'Total Projects',
-      name: 'projects',
-      value: stats.totalProjects,
-      icon: <AssignmentIcon fontSize="large" />,
-      color: '#7b1fa2',
+      title: 'Tournaments',
+      value: tournaments.total,
+      subtitle: `${tournaments.active} Currently Active`,
+      icon: <TournamentIcon size={24} />,
+      color: 'linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%)',
     },
   ];
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'assigned':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'completed':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const columns = [
-    { key: 'name', label: 'Project Name' },
-    { key: 'projectManager', label: 'Assigned Project Manager', render: (row) => userMap[row.projectManager] || 'Unassigned' },
-    { key: 'startDate', label: 'Start Date', render: (row) => formatDate(row.startDate) },
-    { key: 'endDate', label: 'End Date', render: (row) => formatDate(row.endDate) },
-    { key: 'status', label: 'Status', render: (row) => (
-      <Chip
-        label={row.status}
-        color={getStatusColor(row.status)}
-        size="small"
-      />
-    ) },
-  ];
-
-  const paginatedProjects = projects.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.ceil(projects.length / pageSize);
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-  };
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-        Admin Dashboard
-      </Typography>
+    <Box sx={{ p: 3, backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      {/* Header */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#1f2937' }}>
+            Hand Cricket Dashboard
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6b7280', mt: 0.5 }}>
+            Real-time analytics and application performance monitoring
+          </Typography>
+        </Box>
+        <Chip
+          icon={<GrowthIcon size={16} />}
+          label={`Growth: ${users.growthRate}%`}
+          color="success"
+          sx={{ fontWeight: 'bold', px: 1 }}
+        />
+      </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Stats Cards */}
+      {/* Grid Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statCards.map((card, index) => (
-          <Grid   key={index}>
-            <Card onClick={() => SetSelectedBox(card.name)}
+        {statCards.map((card, idx) => (
+          <Grid item xs={12} sm={6} md={3} key={idx}>
+            <Card
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                p: 2,
-                boxShadow: 2,
-                '&:hover': { boxShadow: 4 },
-                transition: 'box-shadow 0.3s ease',
+                background: card.color,
+                color: '#fff',
+                borderRadius: 4,
+                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                overflow: 'hidden',
+                position: 'relative',
               }}
             >
-              <Box  sx={{ color: card.color, mr: 2 }}>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -10,
+                  right: -10,
+                  opacity: 0.15,
+                  transform: 'scale(1.8)',
+                }}
+              >
                 {card.icon}
               </Box>
-              <CardContent sx={{ flex: 1, p: 0 }}>
-                {loading ? (
-                  <Skeleton variant="text" width={60} height={28} />
-                ) : (
-                  <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                    {card.value}
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.85, fontWeight: 'medium' }}>
+                    {card.title}
                   </Typography>
-                )}
-                <Typography variant="body2" color="text.secondary">
-                  {card.title}
+                </Box>
+                <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>
+                  {card.value}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  {card.subtitle}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
-     <div className='flex flex-row w-full items-center  h-5 bg-gray-200 mb-4 px-4 py-5 gap-7  rounded-lg '>
-      <h1 className={`${selectedBox === 'Users' ? 'bg-blue-500 text-white' : 'text-black bg-gray-50'} cursor-pointer px-4 py-1 rounded-2xl`}onClick={()=>SetSelectedBox('Users')}>Users</h1>
-      <h1 className={`${selectedBox === 'ProjectManagers' ? 'bg-blue-500 text-white' : 'text-black bg-gray-50'} cursor-pointer px-4 py-1 rounded-2xl`}onClick={()=>SetSelectedBox('ProjectManagers')}>ProjectManagers</h1>
-            <h1 className={`${selectedBox === 'teamMember' ? 'bg-blue-500 text-white' : 'text-black bg-gray-50'} cursor-pointer px-4 py-1 rounded-2xl`}onClick={()=>SetSelectedBox('teamMember')}>TeamMember</h1>
-            <h1 className={`${selectedBox === 'blockeduser' ? 'bg-blue-500 text-white' : 'text-black bg-gray-50'} cursor-pointer px-4 py-1 rounded-2xl`}onClick={()=>SetSelectedBox('blockeduser')}>blocked user</h1>
-      <h1 className={`${selectedBox === 'projects' ? 'bg-blue-500 text-white' : 'text-black bg-gray-50'} cursor-pointer px-4 py-1 rounded-2xl`}onClick={()=>SetSelectedBox('projects')}>projects</h1>
 
-      
-     </div>
-     {
-      selectedBox === 'Users' && (<>
-            <h1 className='font-semibold text-2xl text-gray-600'>Users</h1>
-      <Table
-        columns={[
-          { key: 'userName', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'accountType', label: 'accountType' },
-          
-        ]}
-        data={users}
-      />
-      </>)
-
-     }
-       {
-      selectedBox === 'ProjectManagers' && (<>
-      <h1 className='font-semibold text-2xl text-gray-600'>ProjectManager</h1>
-      <Table
-        columns={[
-          { key: 'userName', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'accountType', label: 'accountType' },
-          
-        ]}
-        data={projectManagers}
-      />
-      </>)
-
-     }
-       {
-      selectedBox === 'teamMember' && (<>
-            <h1 className='font-semibold text-2xl text-gray-600'>TeamMember</h1>
-      <Table
-        columns={[
-          { key: 'userName', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'accountType', label: 'accountType' },
-          
-        ]}
-        data={teamMembers}
-      />
-      </>)
-
-     }
-       {
-      selectedBox === 'blockeduser' && (<>
-            <h1 className='font-semibold text-2xl text-gray-600'>Blocked Users</h1>
-      <Table
-        columns={[
-          { key: 'userName', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'accountType', label: 'accountType' },
-          
-        ]}
-        data={blockedUsers}
-      />
-      </>)
-
-     }
-
-      {/* Projects Table */}
-   {selectedBox === 'projects' && (
-        <CardContent>
-          <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Projects Overview
-          </Typography>
-          {loading ? (
-            <Box sx={{ p: 2 }}>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <Skeleton variant="text" width={200} />
-                  <Skeleton variant="text" width={150} />
-                  <Skeleton variant="text" width={100} />
-                  <Skeleton variant="text" width={100} />
-                  <Skeleton variant="rectangular" width={80} height={32} />
-                </Box>
-              ))}
+      {/* Sub-Alert Stats */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6}>
+          <Paper
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              borderLeft: '5px solid #ef4444',
+            }}
+          >
+            <PendingIcon size={24} className="text-red-500" />
+            <Box>
+              <Typography variant="body2" sx={{ color: '#6b7280' }}>
+                Pending Coin Withdrawals
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
+                {transactions.pendingWithdrawals} requests need approval
+              </Typography>
             </Box>
-          ) : (
-            <TablePagination
-              columns={columns}
-              data={paginatedProjects}
-              page={page}
-              onPageChange={handlePageChange}
-              totalPages={totalPages}
-            />
-          )}
-        </CardContent>
-      )}
-  
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Paper
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              borderLeft: '5px solid #3b82f6',
+            }}
+          >
+            <PendingIcon size={24} className="text-blue-500" />
+            <Box>
+              <Typography variant="body2" sx={{ color: '#6b7280' }}>
+                Pending Reward Store Orders
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
+                {orders.pending} orders pending shipment
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Analytics Tables */}
+      <Grid container spacing={4}>
+        {/* Revenue by Ad Network */}
+        <Grid item xs={12} md={7}>
+          <Paper sx={{ p: 3, borderRadius: 4, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#374151' }}>
+              Ad Network Performance
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Ad Network</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">Impressions</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">Revenue (USD)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {ads.revenueByNetwork?.length > 0 ? (
+                    ads.revenueByNetwork.map((net, i) => (
+                      <TableRow key={i} hover>
+                        <TableCell sx={{ textTransform: 'uppercase', fontWeight: 'bold', color: '#4b5563' }}>
+                          {net._id || 'Unknown'}
+                        </TableCell>
+                        <TableCell align="right">{net.impressions}</TableCell>
+                        <TableCell align="right">${parseFloat(net.revenue).toFixed(4)}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center" sx={{ py: 3, color: '#9ca3af' }}>
+                        No network impressions recorded yet.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+
+        {/* Top Earners Leaderboard */}
+        <Grid item xs={12} md={5}>
+          <Paper sx={{ p: 3, borderRadius: 4, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#374151' }}>
+              Top Earners Leaderboard
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Player</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">Ad Coins</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }} align="right">Reward Coins</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {topUsers?.length > 0 ? (
+                    topUsers.map((user, i) => (
+                      <TableRow key={i} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#1f2937' }}>
+                            {user.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#9ca3af' }}>
+                            {user.email}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ color: '#4b5563', fontWeight: 'bold' }}>
+                          {user.adCoins}
+                        </TableCell>
+                        <TableCell align="right" sx={{ color: '#10b981', fontWeight: 'bold' }}>
+                          {user.rewardCoins}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center" sx={{ py: 3, color: '#9ca3af' }}>
+                        No players registered.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

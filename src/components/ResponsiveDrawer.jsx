@@ -51,7 +51,12 @@ function ResponsiveDrawer({ window, children, lists, onNavigate }) {
   const handleLogout = async () => {
     try {
       await logoutAPI();
-      setUser(null);
+      setUser({
+        userName: "",
+        isVerified: false,
+        email: "",
+        accountType: "",
+      });
       localStorage.removeItem("token");
       setIsLogin(false);
       navigate("/login");

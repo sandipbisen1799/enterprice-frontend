@@ -16,14 +16,14 @@ function Profile() {
   /* ---------------- STATE ---------------- */
   const [isEditing, setIsEditing] = useState(false);
   const [otpInput, setOtpInput] = useState(false);
-  const [imageUrl, setImageUrl] = useState(user.imageUrl || "");
+  const [imageUrl, setImageUrl] = useState(user?.imageUrl || "");
   const [selectedFile, setSelectedFile] = useState(null);
   const [showPrevious, setShowPrevious] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showRetype, setShowRetype] = useState(false);
   const [profileData, setProfileData] = useState({
-    userName: user.userName || "",
-    phoneNumber: user.phoneNumber || "",
+    userName: user?.userName || "",
+    phoneNumber: user?.phoneNumber || "",
   });
   const[modifyPassword,setModifyPassword]=useState(false);
 
@@ -41,11 +41,11 @@ function Profile() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setProfileData({
-      userName: user.userName || "",
-      phoneNumber: user.phoneNumber || "",
+      userName: user?.userName || "",
+      phoneNumber: user?.phoneNumber || "",
     });
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setImageUrl(user.imageUrl || "");
+    setImageUrl(user?.imageUrl || "");
   }, [user]);
 
   /* ---------------- HANDLERS ---------------- */
@@ -81,8 +81,8 @@ const handleEnterKey = (e, index) => {
 
   const handleCancelEdit = () => {
     setProfileData({
-      userName: user.userName,
-      phoneNumber: user.phoneNumber,
+      userName: user?.userName || "",
+      phoneNumber: user?.phoneNumber || "",
     });
     setIsEditing(false);
   };
@@ -105,7 +105,7 @@ const handleEnterKey = (e, index) => {
   /* ---------------- OTP ---------------- */
   const handleVerifyRequest = async () => {
     try {
-      await reverifyuserAPI({ email: user.email });
+      await reverifyuserAPI({ email: user?.email });
       setOtpInput(true);
       toast.success("OTP sent to your email");
     } catch (error) {
@@ -135,7 +135,7 @@ const handleEnterKey = (e, index) => {
 
   const handleVerifyUser = async () => {
     try {
-      await verifyuserAPI({ email: user.email, otp: formData.otp });
+      await verifyuserAPI({ email: user?.email, otp: formData.otp });
       toast.success("Account verified");
       setOtpInput(false);
       checkAuth();
@@ -252,7 +252,7 @@ const handleEnterKey = (e, index) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <input
-              value={user.email}
+              value={user?.email || ""}
               readOnly
               className="w-full border p-3 rounded-lg bg-gray-100 text-gray-600"
             />
@@ -260,7 +260,7 @@ const handleEnterKey = (e, index) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
             <input
-              value={user.accountType}
+              value={user?.accountType || ""}
               readOnly
               className="w-full border p-3 rounded-lg bg-gray-100 text-gray-600"
             />
@@ -281,7 +281,7 @@ const handleEnterKey = (e, index) => {
         </div>
 
         {/* VERIFY */}
-        {!user.isVerified && !otpInput && (
+        {!user?.isVerified && !otpInput && (
           <div className="mb-6">
             <button onClick={handleVerifyRequest} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
               Verify Account

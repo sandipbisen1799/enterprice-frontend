@@ -1,42 +1,27 @@
 import ResponsiveDrawer from "../components/ResponsiveDrawer.jsx";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Bell, BookUser, CircleChevronDown, FolderDot, LayoutDashboard, SquareChartGantt, User, UserCheck } from "lucide-react";
+import {
+  LayoutDashboard,
+  User,
+  Coins,
+  Trophy,
+  ShoppingBag,
+  ShieldAlert,
+  Settings
+} from "lucide-react";
 
 import React from "react";
 function AdminLayout() {
   const navigate = useNavigate();
-  // const location = useLocation();
-  // const [menuOpen, setMenuOpen] = useState(false);
-  // const [navBar, setNavbar] = useState(false);
 
-  // const itemClass = (path) =>
-  //   `cursor-pointer w-full py-3 flex items-center gap-x-4  justify-start capitalize text-white font-semibold transition
-  //    ${
-  //      location.pathname === path
-  //        ? "bg-[#7D6CCA] shadow-sm"
-  //        : "hover:bg-[#7d6ccaa5]"
-  //    }`;
-
-
-    const drawerItems = [
+  const drawerItems = [
     { text: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin" },
     { text: "Users", icon: <User size={20} />, path: "/admin/users" },
-    {
-      text: "Project Manager",
-      icon: <FolderDot size={20} />,
-      path: "/admin/projectmanager",
-    },
-    {
-      text: "Projects",
-      icon: <SquareChartGantt size={20} />,
-      path: "/admin/projects",
-    },
-    { text: "IP Address", icon: <BookUser size={20} />, path: "/admin/ip" },
-      {
-          text:"profile",
-          icon:<User size={20}/>,
-          path:'/admin/profile'
-        }
+    { text: "Withdrawals", icon: <Coins size={20} />, path: "/admin/withdrawals" },
+    { text: "Tournaments", icon: <Trophy size={20} />, path: "/admin/tournaments" },
+    { text: "Reward Store", icon: <ShoppingBag size={20} />, path: "/admin/rewards" },
+    { text: "Fraud Report", icon: <ShieldAlert size={20} />, path: "/admin/fraud" },
+    { text: "Profile", icon: <Settings size={20} />, path: "/admin/profile" }
   ];
 
   return (
