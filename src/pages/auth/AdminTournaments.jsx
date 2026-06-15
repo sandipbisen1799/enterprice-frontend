@@ -51,7 +51,7 @@ function AdminTournaments() {
     setLoading(true);
     try {
       const data = await getTournaments();
-      setTournaments(data || []);
+      setTournaments(data?.tournaments || data || []);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load tournaments list');
