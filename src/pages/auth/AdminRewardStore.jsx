@@ -80,7 +80,7 @@ function AdminRewardStore() {
     setProductLoading(true);
     try {
       const data = await getAdminProducts(productPage, 20);
-      setProducts(data.products || data.results || []);
+      setProducts(data.data?.products || data.products || data.results || []);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load products');

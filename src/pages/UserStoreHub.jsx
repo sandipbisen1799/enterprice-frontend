@@ -12,7 +12,8 @@ import {
   Loader2,
   CheckCircle,
   Truck,
-  PackageCheck
+  PackageCheck,
+  XCircle
 } from "lucide-react";
 import { 
   getAllProductsAPI, 
@@ -44,9 +45,8 @@ function UserStoreHub() {
     setLoading(true);
     try {
       const res = await getAllProductsAPI(1, 40);
-      if (res?.products) {
-        setProducts(res.products.filter(p => p.isActive));
-      }
+      const productsList = res?.data?.products || res?.products || [];
+      setProducts(productsList.filter(p => p.isActive));
     } catch (err) {
       console.error(err);
     } finally {
@@ -58,9 +58,7 @@ function UserStoreHub() {
     setOrdersLoading(true);
     try {
       const res = await getUserOrdersAPI(1, 20);
-      if (res?.orders) {
-        setOrders(res.orders);
-      }
+      setOrders(res?.data || res?.orders || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -164,9 +162,9 @@ function UserStoreHub() {
               >
                 {/* Product Image placeholder */}
                 <div className="aspect-video bg-slate-900 flex items-center justify-center relative border-b border-slate-800">
-                  {product.image ? (
+                  {product.images?.[0]?.url ? (
                     <img 
-                      src={product.image} 
+                      src={product.images[0].url} 
                       alt={product.name} 
                       className="w-full h-full object-cover" 
                     />
@@ -194,8 +192,8 @@ function UserStoreHub() {
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800">
                     <div className="flex items-center gap-1">
                       <Coins className="w-4 h-4 text-emerald-400" />
-                      <span className="font-black text-emerald-400 text-sm">{product.price}</span>
-                      <span className="text-[9px] text-slate-500 font-semibold uppercase">{product.coinType === "rewardCoins" ? "REWARD" : "AD"}</span>
+                      <span className="font-black text-emerald-400 text-sm">{product.coinPrice}</span>
+                      <span className="text-[9px] text-slate-500 font-semibold uppercase">REWARD</span>
                     </div>
                     <span className="text-[10px] text-slate-450 font-bold">{product.stock} left</span>
                   </div>
@@ -237,9 +235,9 @@ function UserStoreHub() {
                     <ShoppingBag className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-slate-200">{order.productName || "Reward Pack"}</h4>
+                    <h4 className="font-extrabold text-slate-200">{order.items?.[0]?.productName || order.items?.[0]?.productId?.name || "Reward Item"}</h4>
                     <p className="text-xs text-slate-450 mt-1">
-                      Qty: {order.quantity} | Total Price: <span className="font-bold text-emerald-400">{order.totalPrice} Coins</span>
+                      Qty: {order.items?.[0]?.quantity || 1} | Total Price: <span className="font-bold text-emerald-400">{order.totalCoins} Coins</span>
                     </p>
                     <p className="text-[10px] text-slate-500 mt-0.5">Order ID: {order._id}</p>
                   </div>
@@ -300,7 +298,7 @@ function UserStoreHub() {
                   Redeem Reward Checkout
                 </h3>
                 <p className="text-xs text-slate-450 mt-1">
-                  You are purchasing <span className="text-indigo-400 font-bold">{selectedProduct.name}</span> for <span className="text-emerald-400 font-bold">{selectedProduct.price} Reward Coins</span>.
+                  You are purchasing <span className="text-indigo-400 font-bold">{selectedProduct.name}</span> for <span className="text-emerald-400 font-bold">{selectedProduct.coinPrice} Reward Coins</span>.
                 </p>
               </div>
 
