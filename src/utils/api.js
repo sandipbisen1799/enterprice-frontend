@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const getBaseURL = () => {
-  const url = "http://localhost:8888";
+  const url = import.meta.env.VITE_API_URL ||  "https://handcricket-backend-9nij.onrender.com"  ||  "http://localhost:8888";
   return url.endsWith("/api") ? url : `${url}/api`;
 };
 
