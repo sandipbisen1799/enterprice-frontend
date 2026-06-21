@@ -6,6 +6,23 @@ export const Api = createContext();
 
 function ApiProvider({ children }) {
 
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("theme", nextTheme);
+  };
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
+
   const [user, setUser] = useState({
   id: null,
   userName: '',
@@ -53,8 +70,8 @@ function ApiProvider({ children }) {
         islogin,
         setIsLogin,
         checkAuth,
-          
-      
+        theme,
+        toggleTheme
       }}
     >
       {children}

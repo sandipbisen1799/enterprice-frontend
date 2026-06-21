@@ -37,6 +37,7 @@ function AdminTournaments() {
     type: '16_players',
     maxPlayers: 16,
     entryFee: 0,
+    winningPrize: 0,
     registrationStartDate: '',
     registrationEndDate: '',
     startDate: '',
@@ -77,6 +78,7 @@ function AdminTournaments() {
         ...form,
         maxPlayers: parseInt(form.maxPlayers),
         entryFee: parseInt(form.entryFee),
+        winningPrize: parseInt(form.winningPrize) || 0,
         registrationStartDate: new Date(form.registrationStartDate).toISOString(),
         registrationEndDate: new Date(form.registrationEndDate).toISOString(),
         startDate: new Date(form.startDate).toISOString(),
@@ -91,6 +93,7 @@ function AdminTournaments() {
           type: '16_players',
           maxPlayers: 16,
           entryFee: 0,
+          winningPrize: 0,
           registrationStartDate: '',
           registrationEndDate: '',
           startDate: '',
@@ -391,6 +394,16 @@ function AdminTournaments() {
                   value={form.entryFee}
                   onChange={(e) => setForm({ ...form, entryFee: e.target.value })}
                   required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Winning Prize (Total Coins)"
+                  type="number"
+                  fullWidth
+                  value={form.winningPrize}
+                  onChange={(e) => setForm({ ...form, winningPrize: e.target.value })}
+                  helperText="Split: 1st 50% | 2nd 25% | 3rd 15% | 4th 10%"
                 />
               </Grid>
               <Grid item xs={12}>

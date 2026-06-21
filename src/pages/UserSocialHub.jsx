@@ -26,7 +26,7 @@ import {
 import socketManager from "../utils/socket";
 
 function UserSocialHub() {
-  const { user } = useApi();
+  const { user, theme } = useApi();
   const [activeTab, setActiveTab] = useState("friends"); // friends, requests, search
   
   const [friends, setFriends] = useState([]);
@@ -202,26 +202,28 @@ function UserSocialHub() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-160px)] animate-in fade-in duration-300">
       
-      {/* Directory & Requests List pane */}
-      <div className="bg-slate-800/80 border border-slate-700/50 rounded-3xl p-5 flex flex-col gap-6 h-full overflow-y-auto">
-        <div className="flex gap-2 p-1 bg-slate-900 border border-slate-850 rounded-2xl">
+      {/* Directory & Requests List Pane */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-5 flex flex-col gap-5 h-full overflow-y-auto shadow-xs">
+        
+        {/* Navigation Tabs */}
+        <div className="flex gap-1.5 p-1 bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-805/60 rounded-2xl">
           <button
             onClick={() => setActiveTab("friends")}
-            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "friends" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"}`}
+            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "friends" ? "bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-250"}`}
           >
             Friends
           </button>
           <button
             onClick={() => setActiveTab("requests")}
-            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "requests" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"}`}
+            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "requests" ? "bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-250"}`}
           >
             Requests
           </button>
           <button
             onClick={() => setActiveTab("search")}
-            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "search" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"}`}
+            className={`w-full py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "search" ? "bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-250"}`}
           >
             Find Users
           </button>
@@ -229,41 +231,43 @@ function UserSocialHub() {
 
         {loading ? (
           <div className="flex justify-center py-20 flex-1 items-center">
-            <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+            <Loader2 className="w-6 h-6 text-primary animate-spin" />
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-3">
+            
+            {/* Friends Tab */}
             {activeTab === "friends" && (
               friends.map((f) => (
                 <div 
                   key={f.id || f._id} 
-                  className="bg-slate-750/30 border border-slate-700/35 p-3 rounded-2xl flex items-center justify-between gap-3 hover:border-slate-600 transition-colors cursor-pointer"
+                  className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-805/50 p-3 rounded-2xl flex items-center justify-between gap-3 hover:border-slate-350 dark:hover:border-slate-700 transition-colors cursor-pointer"
                   onClick={() => handleOpenChat(f)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 text-left">
                     <div className="relative">
                       <img 
                         src={f.imageUrl || f.avatar || "https://via.placeholder.com/150"} 
                         alt={f.name} 
-                        className="w-10 h-10 rounded-full object-cover" 
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200/60 dark:border-slate-800" 
                       />
-                      <Circle className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${f.isOnline ? "fill-emerald-500 text-emerald-500" : "fill-slate-500 text-slate-500"}`} />
+                      <Circle className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${f.isOnline ? "fill-emerald-500 text-emerald-500" : "fill-slate-400 text-slate-400"}`} />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-200 text-sm line-clamp-1">{f.name}</h4>
-                      <p className="text-[10px] text-slate-450 mt-0.5">Wins: {f.totalWins || 0}</p>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1">{f.name}</h4>
+                      <p className="text-[10px] text-slate-450 dark:text-slate-400 mt-0.5 font-medium">Wins: {f.totalWins || 0}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <button 
                       onClick={() => handleOpenChat(f)}
-                      className="p-2 bg-indigo-500/10 hover:bg-indigo-500/25 border border-indigo-500/20 text-indigo-400 rounded-xl transition-all"
+                      className="p-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-xl transition-all border border-transparent cursor-pointer"
                     >
                       <MessageSquare className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleRemoveFriend(f.id || f._id)}
-                      className="p-2 bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/20 text-rose-450 rounded-xl transition-all"
+                      className="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-xl transition-all border border-transparent cursor-pointer"
                     >
                       <UserX className="w-4 h-4" />
                     </button>
@@ -272,30 +276,31 @@ function UserSocialHub() {
               ))
             )}
 
+            {/* Friend Requests Tab */}
             {activeTab === "requests" && (
               requests.map((req) => (
-                <div key={req.id} className="bg-slate-750/30 border border-slate-700/35 p-3 rounded-2xl flex items-center justify-between gap-3">
+                <div key={req.id} className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-805/50 p-3 rounded-2xl flex items-center justify-between gap-3 text-left">
                   <div className="flex items-center gap-3">
                     <img 
                       src={req.requester.imageUrl || req.requester.avatar || "https://via.placeholder.com/150"} 
                       alt={req.requester.name} 
-                      className="w-10 h-10 rounded-full object-cover" 
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200/60 dark:border-slate-800" 
                     />
                     <div>
-                      <h4 className="font-bold text-slate-200 text-sm line-clamp-1">{req.requester.name}</h4>
-                      <p className="text-[10px] text-slate-450 mt-0.5">{req.requester.email}</p>
+                      <h4 className="font-bold text-slate-805 dark:text-slate-200 text-sm line-clamp-1">{req.requester.name}</h4>
+                      <p className="text-[10px] text-slate-450 dark:text-slate-450 mt-0.5 line-clamp-1">{req.requester.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button 
                       onClick={() => handleAcceptRequest(req.id)}
-                      className="p-2 bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/20 text-emerald-400 rounded-xl transition-all"
+                      className="p-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-xl transition-all border border-transparent cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDeclineRequest(req.id)}
-                      className="p-2 bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/20 text-rose-450 rounded-xl transition-all"
+                      className="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-xl transition-all border border-transparent cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -304,42 +309,44 @@ function UserSocialHub() {
               ))
             )}
 
+            {/* Find Users Tab */}
             {activeTab === "search" && (
               onlineUsers.map((ou) => (
-                <div key={ou.id} className="bg-slate-750/30 border border-slate-700/35 p-3 rounded-2xl flex items-center justify-between gap-3">
+                <div key={ou.id} className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-805/50 p-3 rounded-2xl flex items-center justify-between gap-3 text-left">
                   <div className="flex items-center gap-3">
                     <img 
                       src={ou.imageUrl || ou.avatar || "https://via.placeholder.com/150"} 
                       alt={ou.name} 
-                      className="w-10 h-10 rounded-full object-cover" 
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200/60 dark:border-slate-800" 
                     />
                     <div>
-                      <h4 className="font-bold text-slate-200 text-sm line-clamp-1">{ou.name}</h4>
-                      <p className="text-[10px] text-slate-450 mt-0.5">Wins: {ou.totalWins || 0}</p>
+                      <h4 className="font-bold text-slate-805 dark:text-slate-200 text-sm line-clamp-1">{ou.name}</h4>
+                      <p className="text-[10px] text-slate-450 dark:text-slate-400 mt-0.5 font-medium">Wins: {ou.totalWins || 0}</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => handleSendRequest(ou.id)}
-                    className="p-2 bg-indigo-500/10 hover:bg-indigo-500/25 border border-indigo-500/20 text-indigo-400 rounded-xl transition-all flex items-center gap-1 text-xs font-bold px-3 py-2"
+                    className="p-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-xl transition-all flex items-center gap-1 text-[11px] font-bold px-3 py-2 border border-transparent cursor-pointer"
                   >
-                    <UserPlus className="w-4 h-4" /> Add
+                    <UserPlus className="w-3.5 h-3.5" /> Add
                   </button>
                 </div>
               ))
             )}
 
+            {/* Empty States */}
             {activeTab === "friends" && friends.length === 0 && (
-              <div className="text-center py-12 text-slate-500 font-bold text-xs uppercase tracking-wide">
+              <div className="text-center py-16 text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">
                 No friends added yet
               </div>
             )}
             {activeTab === "requests" && requests.length === 0 && (
-              <div className="text-center py-12 text-slate-500 font-bold text-xs uppercase tracking-wide">
+              <div className="text-center py-16 text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">
                 No pending requests
               </div>
             )}
             {activeTab === "search" && onlineUsers.length === 0 && (
-              <div className="text-center py-12 text-slate-500 font-bold text-xs uppercase tracking-wide">
+              <div className="text-center py-16 text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-wider">
                 No other online users found
               </div>
             )}
@@ -348,27 +355,27 @@ function UserSocialHub() {
       </div>
 
       {/* Messaging Pane */}
-      <div className="lg:col-span-2 bg-slate-800/80 border border-slate-700/50 rounded-3xl p-5 flex flex-col justify-between h-full overflow-hidden">
+      <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-5 flex flex-col justify-between h-full overflow-hidden shadow-xs">
         {activeChatFriend ? (
           <>
-            {/* Header info */}
-            <div className="flex items-center gap-3 border-b border-slate-700/50 pb-3">
+            {/* Header Info */}
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 text-left">
               <img 
                 src={activeChatFriend.imageUrl || activeChatFriend.avatar || "https://via.placeholder.com/150"} 
                 alt={activeChatFriend.name} 
-                className="w-10 h-10 rounded-full object-cover" 
+                className="w-10 h-10 rounded-full object-cover border border-slate-200/60 dark:border-slate-800" 
               />
               <div>
-                <h4 className="font-extrabold text-slate-100 text-sm">{activeChatFriend.name}</h4>
-                <p className="text-[10px] text-slate-400 mt-0.5">Direct chat session</p>
+                <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm">{activeChatFriend.name}</h4>
+                <p className="text-[10px] text-slate-400 dark:text-slate-455 mt-0.5">Direct chat session</p>
               </div>
             </div>
 
-            {/* Message window */}
-            <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-3 px-2">
+            {/* Message Logs */}
+            <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-3.5 px-2">
               {chatLoading ? (
                 <div className="flex justify-center items-center h-full">
-                  <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
                 </div>
               ) : (
                 chatMessages.map((msg) => {
@@ -376,10 +383,10 @@ function UserSocialHub() {
                   return (
                     <div 
                       key={msg.id || msg._id} 
-                      className={`flex flex-col max-w-[70%] rounded-2xl px-4 py-2.5 text-sm ${isMe ? "ml-auto bg-indigo-600 text-white rounded-tr-none" : "mr-auto bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none"}`}
+                      className={`flex flex-col max-w-[75%] rounded-2xl px-4 py-2.5 text-xs text-left ${isMe ? "ml-auto bg-primary text-white rounded-tr-none" : "mr-auto bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-805/50 text-slate-800 dark:text-slate-200 rounded-tl-none"}`}
                     >
                       <p>{msg.text}</p>
-                      <span className="text-[9px] text-slate-400 mt-1 text-right block">
+                      <span className={`text-[8px] mt-1.5 text-right block ${isMe ? "text-white/70" : "text-slate-400"}`}>
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -390,29 +397,31 @@ function UserSocialHub() {
             </div>
 
             {/* Input message form */}
-            <form onSubmit={handleSendMessage} className="flex gap-2 border-t border-slate-700/50 pt-3">
+            <form onSubmit={handleSendMessage} className="flex gap-2 border-t border-slate-100 dark:border-slate-800 pt-3.5">
               <input 
                 type="text"
                 placeholder="Type a message..."
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-805 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-primary dark:focus:border-indigo-500 focus:ring-2 focus:ring-primary/10"
               />
               <button 
                 type="submit"
                 disabled={!messageText.trim()}
-                className="p-3 bg-indigo-650 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+                className="p-3 bg-primary hover:bg-primary-hover disabled:opacity-40 text-white rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-4.5 h-4.5" />
               </button>
             </form>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center gap-3 flex-1">
-            <MessageSquare className="w-12 h-12 text-slate-700" />
-            <h4 className="font-extrabold text-slate-400 text-sm">No Active Conversation</h4>
-            <p className="text-xs text-slate-500 max-w-xs">
-              Select a friend from the directory pane to open a real-time direct message window.
+          <div className="flex flex-col items-center justify-center text-center gap-4 flex-1">
+            <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/60 flex items-center justify-center text-slate-400">
+              <MessageSquare className="w-6 h-6 text-slate-400" />
+            </div>
+            <h4 className="font-extrabold text-slate-500 dark:text-slate-400 text-sm">No Active Conversation</h4>
+            <p className="text-xs text-slate-405 dark:text-slate-500 max-w-xs leading-relaxed">
+              Select a friend from the directory list on the left to open a real-time message stream.
             </p>
           </div>
         )}

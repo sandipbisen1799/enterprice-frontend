@@ -5,13 +5,13 @@ import {
   Trophy, 
   Tv, 
   Gift, 
-  ShieldAlert, 
   Gamepad2, 
   Compass, 
   Zap, 
   Sparkles,
   Loader2,
-  AlertCircle
+  Calendar,
+  Sparkle
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { 
@@ -25,7 +25,7 @@ import { startFunModeAPI, getMatchmakingStatusAPI, leaveFunModeAPI } from "../se
 
 function UserLobby() {
   const navigate = useNavigate();
-  const { checkAuth } = useApi();
+  const { checkAuth, theme } = useApi();
   const [adStats, setAdStats] = useState({ todayAdsWatched: 0, dailyLimit: 15, remainingAds: 15, totalCoinsEarned: 0 });
   const [adConfig, setAdConfig] = useState({ rewardAmount: 50, dailyLimit: 15 });
   const [loading, setLoading] = useState(false);
@@ -112,7 +112,6 @@ function UserLobby() {
     setAdCountdown(4);
 
     try {
-      // 1. Create ad impression
       const impression = await recordAdImpressionAPI({
         adType: "rewarded",
         adNetwork: "admob",
@@ -121,7 +120,6 @@ function UserLobby() {
 
       const impressionId = impression.impressionId || impression.data?.impressionId;
 
-      // 2. Countdown simulation
       const countdownInterval = setInterval(() => {
         setAdCountdown(prev => {
           if (prev <= 1) {
@@ -132,10 +130,8 @@ function UserLobby() {
         });
       }, 1000);
 
-      // Wait for 4s
       await new Promise(resolve => setTimeout(resolve, 4000));
 
-      // 3. Complete ad impression to credit coins
       const res = await recordAdCompletionAPI(impressionId);
       if (res?.success) {
         toast.success(`Ad watched! Earned ${res.coinsEarned || 50} Coins 🪙`);
@@ -185,169 +181,178 @@ function UserLobby() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 animate-in fade-in duration-300">
+      
       {/* Top Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-6 md:p-8 shadow-xl shadow-indigo-600/10">
-        <div className="absolute right-0 top-0 w-1/3 h-full opacity-10 bg-radial-gradient pointer-events-none" />
-        <div className="max-w-xl">
-          <span className="bg-white/20 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full backdrop-blur-md">
-            Hand Cricket Arena
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary to-secondary rounded-3xl p-6 md:p-10 shadow-xl shadow-primary/10">
+        {/* Background Accents */}
+        <div className="absolute right-[-10%] top-[-20%] w-[40%] h-[150%] rounded-full bg-white/5 blur-3xl pointer-events-none" />
+        <div className="relative z-10 max-w-xl text-left">
+          <span className="bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full backdrop-blur-md">
+            🏏 Play & Earn
           </span>
-          <h2 className="text-3xl md:text-4xl font-black mt-4 leading-tight">
+          <h2 className="text-2xl md:text-4xl font-black text-white mt-4 leading-tight">
             Strike numbers, score runs, and earn real rewards!
           </h2>
-          <p className="text-slate-200 mt-2 text-sm md:text-base opacity-90">
-            Pick a game mode below to match against a bot or other active online users.
+          <p className="text-slate-100 mt-3 text-xs md:text-sm opacity-90 leading-relaxed">
+            Pick a game mode below to match against a bot or other active online users in real-time.
           </p>
         </div>
       </div>
 
-      {/* Grid: Lobbies & Ad Simulator */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Grid Layout: Play Modes & Earning Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Play Modes Selection Card */}
+        {/* Play Modes Selection */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <h2 className="font-extrabold text-2xl tracking-wide flex items-center gap-2 text-slate-100">
-            <Gamepad2 className="w-6 h-6 text-indigo-400" />
+          <h2 className="font-extrabold text-xl tracking-wide flex items-center gap-2.5 text-slate-800 dark:text-slate-100">
+            <Gamepad2 className="w-5 h-5 text-primary" />
             Select Game Mode
           </h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            
             {/* Practice Card */}
-            <div className="bg-slate-800/80 border border-slate-700/50 hover:border-slate-600 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:scale-[1.02] hover:bg-slate-800 group">
-              <div>
-                <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
-                  <Compass className="w-6 h-6 text-indigo-400" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between gap-6 transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group">
+              <div className="text-left">
+                <div className="w-11 h-11 bg-primary/10 dark:bg-primary/20 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <Compass className="w-5 h-5" />
                 </div>
-                <h3 className="font-extrabold text-lg mt-4 text-slate-200">Practice Nets</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Learn the timing, controls, and scoring mechanics with zero stakes.
+                <h3 className="font-bold text-base mt-4 text-slate-800 dark:text-slate-100">Practice Nets</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Learn the timing, controls, and scoring mechanics with zero stakes. Practice makes perfect.
                 </p>
               </div>
-              <button onClick={handleStartPractice} className="w-full bg-slate-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer">
+              <button onClick={handleStartPractice} className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-primary hover:text-white text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl transition-all cursor-pointer text-xs">
                 Enter Nets
               </button>
             </div>
 
             {/* VS Computer Bot Card */}
-            <div className="bg-slate-800/80 border border-slate-700/50 hover:border-slate-600 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:scale-[1.02] hover:bg-slate-800 group">
-              <div>
-                <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
-                  <Zap className="w-6 h-6 text-yellow-400" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between gap-6 transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group">
+              <div className="text-left">
+                <div className="w-11 h-11 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+                  <Zap className="w-5 h-5" />
                 </div>
-                <h3 className="font-extrabold text-lg mt-4 text-slate-200">VS Computer</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Challenge our custom Bot AI. Select bot personalities and dynamic difficulty settings.
+                <h3 className="font-bold text-base mt-4 text-slate-800 dark:text-slate-100">VS Computer</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Challenge our custom Bot AI. Select bot difficulties and personalities to test your limits.
                 </p>
               </div>
-              <button onClick={() => setBotModalOpen(true)} className="w-full bg-slate-700 hover:bg-yellow-500 hover:text-slate-950 text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer">
+              <button onClick={() => setBotModalOpen(true)} className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl transition-all cursor-pointer text-xs">
                 Choose Config
               </button>
             </div>
 
             {/* VS 100 Mode Card */}
-            <div className="bg-slate-800/80 border border-slate-700/50 hover:border-slate-600 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:scale-[1.02] hover:bg-slate-800 group">
-              <div>
-                <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
-                  <Sparkles className="w-6 h-6 text-purple-400" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between gap-6 transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group">
+              <div className="text-left">
+                <div className="w-11 h-11 bg-secondary/10 dark:bg-secondary/20 rounded-xl flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all duration-300">
+                  <Sparkles className="w-5 h-5" />
                 </div>
-                <h3 className="font-extrabold text-lg mt-4 text-slate-200">VS 100 Arena</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Pay 100 Entry Fee to match with challenging high-AI bots. Double stakes, double rewards.
+                <h3 className="font-bold text-base mt-4 text-slate-800 dark:text-slate-100">VS 100 Arena</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Pay 100 Entry Fee to challenge higher level bots. Double stakes, double rewards.
                 </p>
               </div>
-              <button onClick={handleStartVs100} className="w-full bg-slate-700 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer">
-                Join VS 100 (100 AD)
+              <button onClick={handleStartVs100} className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-secondary hover:text-white text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl transition-all cursor-pointer text-xs">
+                Join Arena (100 AD)
               </button>
             </div>
 
-            {/* Premium Matchmaking Multiplayer Card */}
-            <div className="bg-slate-800/80 border border-slate-700/50 hover:border-slate-600 rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all hover:scale-[1.02] hover:bg-slate-800 group relative overflow-hidden">
+            {/* Real-time Multiplayer Card */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-6 flex flex-col justify-between gap-6 transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group relative overflow-hidden">
               {inQueue && (
-                <div className="absolute inset-0 bg-indigo-950/90 flex flex-col items-center justify-center gap-3 z-10 p-5">
-                  <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                <div className="absolute inset-0 bg-white/95 dark:bg-slate-950/95 flex flex-col items-center justify-center gap-3.5 z-20 p-5">
+                  <Loader2 className="w-7 h-7 text-primary animate-spin" />
                   <div className="text-center">
-                    <p className="font-bold text-slate-200 text-sm">Searching for opponents...</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Elapsed time: {queueTime}s</p>
+                    <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">Searching for Opponents...</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Elapsed time: {queueTime} seconds</p>
                   </div>
-                  <button onClick={handleToggleQueue} className="mt-2 text-xs text-rose-400 hover:text-rose-300 border border-rose-500/30 bg-rose-500/10 px-3.5 py-1.5 rounded-full transition-all">
-                    Cancel Matchmaking
+                  <button onClick={handleToggleQueue} className="text-xs text-rose-500 hover:text-rose-600 border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/10 px-4 py-2 rounded-full transition-all cursor-pointer font-bold">
+                    Cancel Search
                   </button>
                 </div>
               )}
-              <div>
-                <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
-                  <Trophy className="w-6 h-6 text-blue-400 animate-pulse" />
+              <div className="text-left">
+                <div className="w-11 h-11 bg-accent/10 dark:bg-accent/20 rounded-xl flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all duration-300">
+                  <Trophy className="w-5 h-5 animate-pulse" />
                 </div>
-                <h3 className="font-extrabold text-lg mt-4 text-slate-200">Real-time Multiplayer</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Match instantly with other real online players in real-time. Turn-based Socket.IO gameplay.
+                <h3 className="font-bold text-base mt-4 text-slate-800 dark:text-slate-100">Live Multiplayer</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  Match instantly against other active online users in turn-based Socket.IO gameplay.
                 </p>
               </div>
-              <button onClick={handleToggleQueue} className="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer">
+              <button onClick={handleToggleQueue} className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer text-xs">
                 Find Quick Match
               </button>
             </div>
+            
           </div>
         </div>
 
-        {/* Earning Center Widget Card */}
+        {/* Earning Center Sidebar */}
         <div className="flex flex-col gap-6">
-          <h2 className="font-extrabold text-2xl tracking-wide flex items-center gap-2 text-slate-100">
-            <Gift className="w-6 h-6 text-emerald-400" />
+          <h2 className="font-extrabold text-xl tracking-wide flex items-center gap-2.5 text-slate-800 dark:text-slate-100">
+            <Gift className="w-5 h-5 text-emerald-500" />
             Earning Station
           </h2>
 
-          <div className="bg-slate-800/80 border border-slate-700/50 rounded-3xl p-6 flex flex-col gap-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-6 flex flex-col gap-6 shadow-xs">
             
-            {/* Daily Claim Reward */}
-            <div className="bg-slate-750 border border-slate-700/40 rounded-2xl p-4 flex items-center justify-between gap-4">
+            {/* Daily Attendance Card */}
+            <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4 flex items-center justify-between gap-4 text-left">
               <div>
-                <h4 className="font-bold text-sm text-slate-200">Daily Attendance Claim</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Free attendance coins daily.</p>
+                <h4 className="font-bold text-xs text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-primary" /> Daily Check-In
+                </h4>
+                <p className="text-[10px] text-slate-450 mt-1 leading-relaxed">Claim your daily allowance of free coins.</p>
               </div>
               <button 
                 onClick={handleClaimFreeCoins}
                 disabled={loading}
-                className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/10"
+                className="bg-emerald-550 hover:bg-emerald-600 disabled:opacity-40 text-slate-900 font-bold text-xs px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Claim"}
               </button>
             </div>
 
-            {/* Watched Sponsor Ads */}
-            <div className="flex flex-col gap-4">
+            {/* Watch & Earn Box */}
+            <div className="flex flex-col gap-4 text-left">
               <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-slate-200 text-base flex items-center gap-1.5">
-                  <Tv className="w-4 h-4 text-indigo-400" /> Watch & Earn
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                  <Tv className="w-4 h-4 text-primary" /> Watch & Earn
                 </h3>
-                <span className="text-xs text-slate-400">
-                  {adStats.todayAdsWatched} / {adStats.dailyLimit} Ads Watched
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                  {adStats.todayAdsWatched}/{adStats.dailyLimit} Daily Limit
                 </span>
               </div>
-              <div className="w-full bg-slate-700/50 h-2 rounded-full overflow-hidden">
+              
+              <div className="w-full bg-slate-100 dark:bg-slate-950/60 h-2 rounded-full overflow-hidden">
                 <div 
-                  className="bg-indigo-500 h-full rounded-full transition-all duration-500" 
+                  className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500" 
                   style={{ width: `${(adStats.todayAdsWatched / adStats.dailyLimit) * 100}%` }}
                 />
               </div>
 
-              {/* Ad watched simulator box */}
-              <div className="bg-slate-850 border border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[140px]">
+              {/* Ad Simulating Box */}
+              <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200/50 dark:border-slate-805/50 rounded-2xl p-5 flex flex-col items-center justify-center text-center min-h-[160px] relative overflow-hidden transition-colors">
                 {watchingAd ? (
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-                    <p className="font-bold text-slate-200 mt-2 text-sm">Loading Sponsored Clip...</p>
-                    <p className="text-xs text-slate-400">Simulating player watch countdown: {adCountdown}s</p>
+                    <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                    <p className="font-bold text-slate-700 dark:text-slate-300 mt-2 text-xs">Playing Sponsor Video...</p>
+                    <span className="text-[10px] text-slate-400 bg-slate-200 dark:bg-slate-900 px-3 py-1 rounded-full font-bold mt-1">
+                      Time remaining: {adCountdown}s
+                    </span>
                   </div>
                 ) : (
                   <>
-                    <Tv className="w-10 h-10 text-slate-600 mb-2" />
-                    <p className="font-bold text-slate-300 text-xs">Watch a quick 4-second video ad</p>
-                    <p className="text-[10px] text-slate-500 mt-1">Earns +{adConfig.rewardAmount} Ad Coins immediately</p>
+                    <Tv className="w-8 h-8 text-slate-405 dark:text-slate-500 mb-2" />
+                    <p className="font-bold text-slate-700 dark:text-slate-200 text-xs">Watch a quick 4s video ad</p>
+                    <p className="text-[10px] text-slate-450 dark:text-slate-400 mt-1">Earns +{adConfig.rewardAmount} Ad Coins immediately</p>
                     <button 
                       onClick={handleWatchAd}
-                      className="mt-4 bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-650/20"
+                      className="mt-4 bg-primary hover:bg-primary-hover text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs"
                     >
                       Watch Video Ad
                     </button>
@@ -355,8 +360,10 @@ function UserLobby() {
                 )}
               </div>
             </div>
+
           </div>
         </div>
+
       </div>
 
       {/* Bot Customization Modal */}
@@ -364,29 +371,29 @@ function UserLobby() {
         <>
           <div 
             onClick={() => setBotModalOpen(false)} 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4"
           >
             <div 
               onClick={(e) => e.stopPropagation()} 
-              className="bg-slate-850 border border-slate-750 w-[90vw] max-w-md rounded-3xl p-6 shadow-2xl text-white flex flex-col gap-6"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl text-slate-800 dark:text-slate-100 flex flex-col gap-6 text-left"
             >
               <div>
-                <h3 className="font-black text-2xl text-slate-100 flex items-center gap-2">
-                  <Zap className="w-6 h-6 text-yellow-400" />
+                <h3 className="font-black text-xl text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-amber-500" />
                   Bot AI Configuration
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">Customise bot properties to challenge yourself.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Customize opponent capabilities for the match.</p>
               </div>
 
               {/* Bot Difficulty */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Difficulty Level</label>
+              <div className="flex flex-col gap-2.5">
+                <label className="text-xs font-bold uppercase text-slate-400 dark:text-slate-400 tracking-wider">Difficulty Level</label>
                 <div className="grid grid-cols-3 gap-2">
                   {["easy", "medium", "hard"].map((diff) => (
                     <button
                       key={diff}
                       onClick={() => setBotConfig(prev => ({ ...prev, difficulty: diff }))}
-                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border ${botConfig.difficulty === diff ? "bg-indigo-650 border-indigo-500 text-white" : "bg-slate-800 border-slate-700/50 text-slate-400 hover:text-slate-200"}`}
+                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border cursor-pointer ${botConfig.difficulty === diff ? "bg-primary border-primary text-white" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-350 hover:text-slate-800 dark:hover:text-slate-100"}`}
                     >
                       {diff}
                     </button>
@@ -395,14 +402,14 @@ function UserLobby() {
               </div>
 
               {/* Bot Personality */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Playing Personality</label>
+              <div className="flex flex-col gap-2.5">
+                <label className="text-xs font-bold uppercase text-slate-400 dark:text-slate-400 tracking-wider">Playing Style</label>
                 <div className="grid grid-cols-3 gap-2">
                   {["defensive", "balanced", "aggressive"].map((pers) => (
                     <button
                       key={pers}
                       onClick={() => setBotConfig(prev => ({ ...prev, personality: pers }))}
-                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border ${botConfig.personality === pers ? "bg-indigo-650 border-indigo-500 text-white" : "bg-slate-800 border-slate-700/50 text-slate-400 hover:text-slate-200"}`}
+                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border cursor-pointer ${botConfig.personality === pers ? "bg-primary border-primary text-white" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-350 hover:text-slate-800 dark:hover:text-slate-100"}`}
                     >
                       {pers}
                     </button>
@@ -413,15 +420,15 @@ function UserLobby() {
               <div className="flex justify-end gap-3 mt-4">
                 <button 
                   onClick={() => setBotModalOpen(false)} 
-                  className="bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700/50"
+                  className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleStartBotGame}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-950 text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-yellow-500/10"
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
-                  Start Game
+                  Start Match
                 </button>
               </div>
             </div>
